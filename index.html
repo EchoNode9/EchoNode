@@ -728,9 +728,26 @@
       `;
     }
 
-    function renderMain(){
+function renderMain(){
   $("#app").innerHTML = `
+    ${renderSidebar()}
     ${renderHomePage()}
+    ${renderNoticesPage()}
+    ${renderProfilePage()}
+
+    <div class="bottom-nav">
+      <div class="nav-row">
+        <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
+          <span class="nav-icon">#</span><span>home</span>
+        </button>
+        <button class="nav-btn ${state.currentPage==="notices"?"active":""}" data-page="notices">
+          <span class="nav-icon">🔔</span><span>alerts</span>
+        </button>
+        <button class="nav-btn ${state.currentPage==="profile"?"active":""}" data-page="profile">
+          <span class="nav-icon">👤</span><span>profile</span>
+        </button>
+      </div>
+    </div>
   `;
 
   setTimeout(() => {
@@ -744,51 +761,6 @@
   }, 0);
 }
 
-        ${renderHomePage()}
-        ${renderNoticesPage()}
-        ${renderProfilePage()}
-
-        <div class="bottom-nav">
-          <div class="nav-row">
-            <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
-              <span class="nav-icon">#</span><span>home</span>
-            </button>
-            <button class="nav-btn ${state.currentPage==="notices"?"active":""}" data-page="notices">
-              <span class="nav-icon">🔔</span><span>Alerts</span>
-            </button>
-            <button class="nav-btn ${state.currentPage==="profile"?"active":""}" data-page="profile">
-              <span class="nav-icon">◉</span><span>Profile</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="modal" id="editorModal">
-          <div class="sheet">
-            <div class="sheet-handle"></div>
-            <div class="sheet-head">
-              <div class="sheet-title">Edit profile</div>
-              <button class="tool-btn" id="closeEditorBtn">Close</button>
-            </div>
-            <input class="input" id="profileName" placeholder="Display name" value="${esc(state.profile.displayName||"")}">
-            <input class="input" id="profileMood" placeholder="Mood / status text" value="${esc(state.profile.mood||"")}">
-            <select class="select input" id="profilePresence">
-              <option value="online" ${state.profile.presence==="online"?"selected":""}>online</option>
-              <option value="afk" ${state.profile.presence==="afk"?"selected":""}>afk</option>
-              <option value="busy" ${state.profile.presence==="busy"?"selected":""}>busy</option>
-              <option value="offline" ${state.profile.presence==="offline"?"selected":""}>offline</option>
-            </select>
-            <input class="input" id="profileMusic" placeholder="Spotify / MP3 / music link" value="${esc(state.profile.musicUrl||"")}">
-            <textarea class="textarea" id="profileShowcase" placeholder="My Space text">${esc(state.profile.showcase||"")}</textarea>
-            <div class="file-row">
-              <label class="file-btn">Avatar<input type="file" id="avatarFile" accept="image/*"></label>
-              <label class="file-btn">Cover<input type="file" id="coverFile" accept="image/*"></label>
-            </div>
-            <div class="row" style="margin-top:10px">
-              <button class="btn primary" id="saveProfileBtn">Save</button>
-            </div>
-          </div>
-        </div>
-      `;
 
       $$("[data-page]").forEach(btn=>{
         btn.onclick = ()=>{
