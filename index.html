@@ -738,72 +738,106 @@ function renderMain(){
     <div class="bottom-nav">
       <div class="nav-row">
         <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
-          <span class="nav-icon">#</span><span>home</span>
+          <span class="nav-icon">⌂</span><span>Home</span>
         </button>
         <button class="nav-btn ${state.currentPage==="notices"?"active":""}" data-page="notices">
-          <span class="nav-icon">🔔</span><span>alerts</span>
+          <span class="nav-icon">🔔</span><span>Alerts</span>
         </button>
         <button class="nav-btn ${state.currentPage==="profile"?"active":""}" data-page="profile">
-          <span class="nav-icon">👤</span><span>profile</span>
+          <span class="nav-icon">◉</span><span>Profile</span>
         </button>
+      </div>
+    </div>
+
+    <div class="modal" id="editorModal">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-head">
+          <div class="sheet-title">Edit profile</div>
+          <button class="tool-btn" id="closeEditorBtn">Close</button>
+        </div>
+        <input class="input" id="profileName" placeholder="Display name" value="${esc(state.profile.displayName||"")}">
+        <input class="input" id="profileMood" placeholder="Mood / status text" value="${esc(state.profile.mood||"")}">
+        <select class="select input" id="profilePresence">
+          <option value="online" ${state.profile.presence==="online"?"selected":""}>online</option>
+          <option value="afk" ${state.profile.presence==="afk"?"selected":""}>afk</option>
+          <option value="busy" ${state.profile.presence==="busy"?"selected":""}>busy</option>
+          <option value="offline" ${state.profile.presence==="offline"?"selected":""}>offline</option>
+        </select>
+        <input class="input" id="profileMusic" placeholder="Spotify / MP3 / music link" value="${esc(state.profile.musicUrl||"")}">
+        <textarea class="textarea" id="profileShowcase" placeholder="My Space text">${esc(state.profile.showcase||"")}</textarea>
+        <div class="file-row">
+          <label class="file-btn">Avatar<input type="file" id="avatarFile" accept="image/*"></label>
+          <label class="file-btn">Cover<input type="file" id="coverFile" accept="image/*"></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="saveProfileBtn">Save</button>
+        </div>
       </div>
     </div>
   `;
 
-  setTimeout(() => {
-    const btn = document.getElementById("openSidebarBtn");
-    if (btn) {
-      btn.onclick = () => {
-        state.sidebarOpen = true;
-        renderMain();
-      };
+  $$("[data-page]").forEach(btn=>{
+    btn.onclick = ()=>{
+      state.currentPage = btn.dataset.page;
+      renderMain();
+    };
+  });
+
+  $$(".community-item[data-community]").forEach(card=>{
+    card.onclick = ()=>{
+      state.currentCommunity = card.dataset.community;
+      state.currentPage = "home";
+      state.sidebarOpen = false;
+      renderMain();
+    };
+  });
+
+  $("#openSidebarBtn") && ($("#openSidebarBtn").onclick = ()=>{
+    state.sidebarOpen = true;
+    renderMain();
+  });
+
+  $("#closeSidebarBtn") && ($("#closeSidebarBtn").onclick = ()=>{
+    state.sidebarOpen = false;
+    renderMain();
+  });
+
+  $("#sidebarBackdrop") && ($("#sidebarBackdrop").onclick = ()=>{
+    state.sidebarOpen = false;
+    renderMain();
+  });
+
+  $("#sendPostBtn") && ($("#sendPostBtn").onclick = createPost);
+  $("#composer") && $("#composer").addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !e.shiftKey){
+      e.preventDefault();
+      createPost();
     }
-  }, 0);
+  });
+
+  $("#editProfileTopBtn") && ($("#editProfileTopBtn").onclick = openEditor);
+  $("#closeEditorBtn") && ($("#closeEditorBtn").onclick = closeEditor);
+  $("#editorModal") && ($("#editorModal").onclick = e => {
+    if(e.target.id==="editorModal") closeEditor();
+  });
+  $("#saveProfileBtn") && ($("#saveProfileBtn").onclick = saveProfile);
+
+  $("#avatarFile") && ($("#avatarFile").onchange = async e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    state.profile.avatar = await fileToDataUrl(f);
+    showToast("Avatar ready", "Save profile to keep it");
+  });
+
+  $("#coverFile") && ($("#coverFile").onchange = async e => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    state.profile.cover = await fileToDataUrl(f);
+    showToast("Cover ready", "Save profile to keep it");
+  });
 }
 
-
-      $$("[data-page]").forEach(btn=>{
-        btn.onclick = ()=>{
-          state.currentPage = btn.dataset.page;
-          renderMain();
-        };
-      });
-
-      $$(".community-item[data-community]").forEach(card=>{
-        card.onclick = ()=>{
-          state.currentCommunity = card.dataset.community;
-          state.currentPage = "home";
-          renderMain();
-        };
-      });
-
-      $("#sendPostBtn") && ($("#sendPostBtn").onclick = createPost);
-      $("#composer") && $("#composer").addEventListener("keydown", e=>{
-        if(e.key==="Enter" && !e.shiftKey){
-          e.preventDefault();
-          createPost();
-        }
-      });
-
-      $("#editProfileTopBtn") && ($("#editProfileTopBtn").onclick = openEditor);
-      $("#closeEditorBtn").onclick = closeEditor;
-      $("#editorModal").onclick = e => { if(e.target.id==="editorModal") closeEditor(); };
-      $("#saveProfileBtn").onclick = saveProfile;
-
-      $("#avatarFile").onchange = async e => {
-        const f = e.target.files && e.target.files[0];
-        if(!f) return;
-        state.profile.avatar = await fileToDataUrl(f);
-        showToast("Avatar ready", "Save profile to keep it");
-      };
-
-      $("#coverFile").onchange = async e => {
-        const f = e.target.files && e.target.files[0];
-        if(!f) return;
-        state.profile.cover = await fileToDataUrl(f);
-        showToast("Cover ready", "Save profile to keep it");
-      };
-    }
 
     auth.onAuthStateChanged(async user=>{
       if(!user){
