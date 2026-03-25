@@ -729,16 +729,20 @@
     }
 
     function renderMain(){
-      $("#app").innerHTML = `
-      setTimeout(() => {
-  const btn = document.getElementById("openSidebarBtn");
-  if (btn) {
-    btn.onclick = () => {
-      state.sidebarOpen = true;
-      renderMain();
-    };
-  }
-}, 0);
+  $("#app").innerHTML = `
+    ${renderHomePage()}
+  `;
+
+  setTimeout(() => {
+    const btn = document.getElementById("openSidebarBtn");
+    if (btn) {
+      btn.onclick = () => {
+        state.sidebarOpen = true;
+        renderMain();
+      };
+    }
+  }, 0);
+}
 
         ${renderHomePage()}
         ${renderNoticesPage()}
