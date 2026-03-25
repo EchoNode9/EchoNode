@@ -3,24 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EchoNode One-File</title>
+  <title>EchoNode Luxe Communities</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#0a0c12;
-      --bg2:#0f131b;
-      --panel:#151a26;
-      --panel2:#1b2230;
-      --panel3:#0d1017;
-      --line:#2a3246;
-      --text:#f6f8ff;
-      --muted:#9aa5bc;
-      --brand:#6b16ff;
-      --brand2:#8b4dff;
-      --ok:#4ade80;
-      --warn:#f59e0b;
-      --busy:#ef4444;
-      --off:#6b7280;
+      --bg:#0a0c12; --panel:#141925; --panel2:#1b2130; --panel3:#0e121a;
+      --line:#2a3246; --text:#f6f8ff; --muted:#9aa5bc;
+      --brand:#6b16ff; --brand2:#8b4dff;
+      --ok:#4ade80; --warn:#f59e0b; --busy:#ef4444; --off:#6b7280;
       --shadow:0 20px 60px rgba(0,0,0,.38);
     }
     html,body{
@@ -81,20 +71,14 @@
     .topbar{
       position:sticky; top:0; z-index:30; height:62px; padding:0 16px;
       display:flex; align-items:center; justify-content:space-between;
-      backdrop-filter:blur(14px); background:rgba(10,12,18,.76);
+      backdrop-filter:blur(14px); background:rgba(10,12,18,.72);
       border-bottom:1px solid rgba(255,255,255,.05);
     }
-    .top-left{display:flex; align-items:center; gap:10px}
     .top-title{font-size:20px; font-weight:1000; letter-spacing:-.6px}
     .top-sub{font-size:12px; color:var(--muted); margin-top:2px}
     .tool-btn{
       height:38px; padding:0 14px; border:none; border-radius:12px; cursor:pointer;
       background:#202534; color:#eef2ff; font-weight:800;
-    }
-    .icon-btn{
-      width:38px; height:38px; border:none; border-radius:12px; cursor:pointer;
-      background:#202534; color:#eef2ff; font-weight:900;
-      display:flex; align-items:center; justify-content:center;
     }
     .page{display:none; min-height:calc(100vh - 62px - 78px)}
     .page.active{display:block}
@@ -106,7 +90,6 @@
     .card-title{font-size:15px; font-weight:1000; margin-bottom:8px}
     .card-sub{font-size:14px; color:#dbe3f4; line-height:1.55}
     .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .section-title{font-size:12px; font-weight:900; color:var(--muted); letter-spacing:.7px; margin:14px 0 10px}
     .community-list,.notice-list,.member-list,.post-list{display:grid; gap:10px}
     .community-item,.notice-item,.member-item,.post-item{
       background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
@@ -158,33 +141,6 @@
       background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
       font-size:14px; font-weight:900;
     }
-    .progress{
-      margin-top:10px; width:100%; height:10px; border-radius:999px;
-      background:#0d1018; overflow:hidden; border:1px solid rgba(255,255,255,.05)
-    }
-    .progress-bar{
-      height:100%; width:0%;
-      background:linear-gradient(135deg,var(--brand),var(--brand2));
-      border-radius:999px;
-    }
-
-    .sidebar{
-      position:fixed; top:0; left:0; bottom:0; z-index:60;
-      width:min(320px,calc(100% - 56px));
-      background:rgba(9,11,16,.98);
-      border-right:1px solid rgba(255,255,255,.05);
-      transform:translateX(-100%);
-      transition:.22s ease;
-      padding:16px;
-      overflow:auto;
-    }
-    .sidebar.open{transform:translateX(0)}
-    .sidebar-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
-    .sidebar-backdrop{
-      position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.35);
-      display:none;
-    }
-    .sidebar-backdrop.show{display:block}
 
     .bottom-nav{
       position:fixed; left:50%; transform:translateX(-50%); bottom:8px; z-index:40;
@@ -247,7 +203,7 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBzjGmkXQla3Ic09_j8JS5uEntx7F2jLEY",
+      apiKey: "AIzaSyBH2qRm9fx2tJqlBgYJ1Zc7e4FJ8DEQVjs",
       authDomain: "supa-dojo.firebaseapp.com",
       databaseURL: "https://supa-dojo-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "supa-dojo",
@@ -282,7 +238,6 @@
       unsubs:[],
       presenceRef:null,
       lastPostAt:0,
-      sidebarOpen:false,
       profile:{
         displayName:"",
         mood:"Late night chat energy",
@@ -306,7 +261,9 @@
     }
 
     function initials(name){ return (name || "En").trim().slice(0,2); }
+
     function normalizeSongUrl(url){ return String(url || "").trim(); }
+
     function isDirectAudio(url){ return /\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(url || ""); }
 
     function spotifyEmbed(url){
@@ -345,29 +302,6 @@
       if(xp < 600) return 3;
       if(xp < 1000) return 4;
       return 5;
-    }
-
-    function nextLevelXP(level){
-      if(level <= 1) return 100;
-      if(level === 2) return 300;
-      if(level === 3) return 600;
-      if(level === 4) return 1000;
-      return level * 300;
-    }
-
-    function currentLevelBase(level){
-      if(level <= 1) return 0;
-      if(level === 2) return 100;
-      if(level === 3) return 300;
-      if(level === 4) return 600;
-      return 1000 + ((level-5) * 300);
-    }
-
-    function progressPercent(xp, level){
-      const base = currentLevelBase(level);
-      const next = nextLevelXP(level);
-      const span = Math.max(1, next - base);
-      return Math.max(0, Math.min(100, ((xp - base) / span) * 100));
     }
 
     async function addXP(amount){
@@ -660,84 +594,41 @@
       $("#verifyBtn").onclick = verifyCode;
     }
 
-    function renderSidebar(){
-      return `
-        <div class="sidebar-backdrop ${state.sidebarOpen ? "show" : ""}" id="sidebarBackdrop"></div>
-        <aside class="sidebar ${state.sidebarOpen ? "open" : ""}" id="sidebar">
-          <div class="sidebar-top">
-            <div class="top-title">Communities</div>
-            <button class="icon-btn" id="closeSidebarBtn">×</button>
-          </div>
-          <div class="community-list">
-            ${Object.entries(state.communities).map(([id,c])=>`
-              <div class="community-item" data-community="${id}">
-                <div class="community-row">
-                  <div class="community-left">
-                    <div class="hash">#</div>
-                    <div>
-                      <div class="community-name">${esc(c.name)}</div>
-                      <div class="community-topic">${esc(c.topic || "")}</div>
-                    </div>
-                  </div>
-                  <button class="tool-btn">${state.currentCommunity===id ? "Open" : "Go"}</button>
-                </div>
-              </div>
-            `).join("")}
-          </div>
-        </aside>
-      `;
-    }
-
     function renderHomePage(){
-      const current = state.communities[state.currentCommunity] || Object.values(state.communities)[0];
-      const posts = state.posts[state.currentCommunity] || [];
+  const current = state.communities[state.currentCommunity] || Object.values(state.communities)[0];
+  const posts = state.posts[state.currentCommunity] || [];
 
-      return `
-        <div class="page ${state.currentPage==="home"?"active":""}" id="page-home">
-          <div class="topbar">
-            <div class="top-left">
-              <button class="icon-btn" id="openSidebarBtn">☰</button>
-              <div>
-                <div class="top-title">Home</div>
-                <div class="top-sub">${esc(current.name)} • Latest clips, thoughts, and community drops</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="page-body">
-            <div class="composer">
-              <div class="compose-wrap">
-                <textarea class="compose" id="composer" placeholder="Share something with ${esc(current.name)}"></textarea>
-                <button class="send" id="sendPostBtn">Post</button>
-              </div>
-            </div>
-
-            <div class="section-title">LATEST POSTS</div>
-            <div class="post-list">
-              ${posts.length ? posts.slice().reverse().map(p=>`
-                <div class="post-item">
-                  <div class="post-head">
-                    <div class="member-left">
-                      <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.name || "U"))}</div>
-                      <div>
-                        <div class="community-name">${esc(p.name || "User")}</div>
-                        <div class="post-meta">${esc(current.name)} • ${esc(timeLabel(p.createdAt))}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="post-text">${esc(p.text || "")}</div>
-                </div>
-              `).join("") : `
-                <div class="card">
-                  <div class="card-title">No posts yet</div>
-                  <div class="card-sub">Be the first one to share something in ${esc(current.name)}.</div>
-                </div>
-              `}
-            </div>
-          </div>
+  return `
+    <div class="page ${state.currentPage==="home"?"active":""}" id="page-home">
+      <div class="topbar">
+        <div id="menuBtn" style="font-size:22px;cursor:pointer">☰</div>
+          <div class="top-title">Home</div>
+          <div class="top-sub">Latest clips, thoughts, and community drops</div>
         </div>
-      `;
-    }
+      </div>
+
+      <div class="page-body">
+        <div class="section-title">COMMUNITIES</div>
+
+        <div class="community-list">
+          ${Object.entries(state.communities).map(([id,c])=>`
+            <div class="community-item" data-community="${id}">
+              <div class="community-row">
+                <div class="community-left">
+                  <div class="hash">#</div>
+                  <div>${c.name}</div>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
+
 
     function renderNoticesPage(){
       return `
@@ -802,8 +693,6 @@
         musicCard = `<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
       }
 
-      const pct = progressPercent(p.xp || 0, p.level || 1);
-
       return `
         <div class="page ${state.currentPage==="profile"?"active":""}" id="page-profile">
           <div class="topbar">
@@ -824,10 +713,7 @@
                   <span class="badge">LVL ${esc(p.level || 1)}</span>
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
-                <div class="xp-box">
-                  XP: ${esc(p.xp || 0)} ⭐
-                  <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
-                </div>
+                <div class="xp-box">XP: ${esc(p.xp || 0)} ⭐</div>
                 <div class="grid" style="margin-top:16px">
                   <div class="card">
                     <div class="card-title">My Space</div>
@@ -844,7 +730,6 @@
 
     function renderMain(){
       $("#app").innerHTML = `
-        ${renderSidebar()}
         ${renderHomePage()}
         ${renderNoticesPage()}
         ${renderProfilePage()}
@@ -852,7 +737,7 @@
         <div class="bottom-nav">
           <div class="nav-row">
             <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
-              <span class="nav-icon">⌂</span><span>Home</span>
+              <span class="nav-icon">#</span><span>home</span>
             </button>
             <button class="nav-btn ${state.currentPage==="notices"?"active":""}" data-page="notices">
               <span class="nav-icon">🔔</span><span>Alerts</span>
@@ -902,22 +787,8 @@
         card.onclick = ()=>{
           state.currentCommunity = card.dataset.community;
           state.currentPage = "home";
-          state.sidebarOpen = false;
           renderMain();
         };
-      });
-
-      $("#openSidebarBtn") && ($("#openSidebarBtn").onclick = ()=>{
-        state.sidebarOpen = true;
-        renderMain();
-      });
-      $("#closeSidebarBtn") && ($("#closeSidebarBtn").onclick = ()=>{
-        state.sidebarOpen = false;
-        renderMain();
-      });
-      $("#sidebarBackdrop") && ($("#sidebarBackdrop").onclick = ()=>{
-        state.sidebarOpen = false;
-        renderMain();
       });
 
       $("#sendPostBtn") && ($("#sendPostBtn").onclick = createPost);
@@ -966,8 +837,81 @@
       if(state.user) renderMain();
       else renderAuth();
     }
+    function getLevel(xp){
+  if(xp < 100) return 1;
+  if(xp < 300) return 2;
+  if(xp < 600) return 3;
+  if(xp < 1000) return 4;
+  return 5;
+}
+
+async function addXP(amount){
+  const uid = auth.currentUser && auth.currentUser.uid;
+  if(!uid) return;
+
+  const ref = db.ref("users/" + uid);
+  const snap = await ref.get();
+  const data = snap.val() || {};
+  const xp = (data.xp || 0) + amount;
+  const level = getLevel(xp);
+
+  await ref.update({ xp: xp, level: level });
+}
 
     render();
-  </script>
+  function initXPUI(){
+  const xpBox = document.getElementById("xpBox");
+  if(!xpBox) return;
+
+  auth.onAuthStateChanged(user=>{
+    if(!user) return;
+
+    db.ref("users/" + user.uid).on("value", snap=>{
+      const d = snap.val() || {};
+
+      xpBox.innerHTML = `
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span>⭐ LVL ${d.level || 1}</span>
+          <span>🔥 ${d.xp || 0} XP</span>
+        </div>
+      `;
+    });
+  });
+}
+
+</script>
+
+
+
 </body>
+
+<div id="sidebar" style="
+position:fixed;
+top:0;
+left:-260px;
+width:260px;
+height:100%;
+background:#111;
+transition:0.3s;
+z-index:999;
+padding:15px;
+">
+  <h3>Communities</h3>
+  <div id="communityList"></div>
+</div>
+
+<script>
+const sidebar = document.getElementById("sidebar");
+
+document.getElementById("menuBtn").onclick = function() {
+  if (sidebar.style.left === "0px") {
+    sidebar.style.left = "-260px";
+  } else {
+    sidebar.style.left = "0px";
+  }
+};
+</script>
+
+
+
 </html>
