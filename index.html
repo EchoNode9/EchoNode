@@ -993,13 +993,22 @@
     }
 
     function renderProfilePage(){
-      const viewedProfile = state.memberProfileMode && state.memberCardUid ? (state.profiles[state.memberCardUid] || state.profile) : state.profile;
-      const p=viewedProfile,return `
+      const p=state.profile, avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
+      let musicCard=`<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from Edit Profile.</div>`;
+      const sp=spotifyEmbed(p.musicUrl);
+      if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+      else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
+      else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
+      const pct=progressPercent(p.xp||0,p.level||1), friends=friendCandidates().slice(0,4);
+      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
+      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
+
+      return `
         <div class="page ${state.currentPage==="profile"?"active":""}" id="page-profile">
           <div class="topbar">
             <div>
               <div class="top-title">Profile</div>
-              <div class="top-sub">${state.memberProfileMode ? "Public member profile" : "Your EchoNode identity"}</div>
+              <div class="top-sub">Your EchoNode identity</div>
             </div>
           </div>
 
@@ -1013,7 +1022,7 @@
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
-                  ${state.memberProfileMode ? `<button class="tiny-edit" id="backToBaseBtn">${icon("arrow")}</button>` : `<button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>`}
+                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
                   ${state.founder ? `<span class="badge">Founder</span>` : ``}
                   ${birthdayLine}
                 </div>
@@ -1023,9 +1032,8 @@
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
                 </div>
 
-                ${state.memberProfileMode ? `<div class="row" style="margin-top:16px"><button class="btn secondary" id="memberProfileBlockBtn">${icon("block")} Block user</button></div>` : ``}
                 <div class="card" style="margin-top:16px">
-                  <div class="card-title">${state.memberProfileMode ? ((p.gender==="female") ? "Her Space" : (p.gender==="male" ? "His Space" : "Their Space")) : "My Space"}</div>
+                  <div class="card-title">My Space</div>
                   <div class="card-sub">${esc(p.mySpace || "")}</div>
                 </div>
 
@@ -1057,7 +1065,6 @@
         </div>
       `;
     }
-
 
     function renderMemberProfilePage(){
       const uid = state.viewingProfileUid;
@@ -1335,7 +1342,7 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
       $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
       $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.currentPage="memberProfile"; renderMain(); });
@@ -1389,8 +1396,7 @@
 
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberProfileMode=false; state.currentPage="base"; renderMain(); });
-      $("#memberProfileBlockBtn") && ($("#memberProfileBlockBtn").onclick=()=>{ state.selectedDmUid=state.memberCardUid; blockSelectedUser(); });
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; renderMain(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
