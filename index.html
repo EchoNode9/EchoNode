@@ -749,9 +749,65 @@
     function openChatWith(uid){
       if(!uid) return;
       state.selectedDmUid = uid;
-      state.currentPage = "base";
+      state.currentPage = "chat";
       markThreadRead(uid);
       renderMain();
+    }
+
+    /* 2) BACK */
+    function goBackToBase(){
+      state.currentPage = "base";
+      renderMain();
+    }
+
+    /* 3) OPEN PROFILE */
+    function openMemberProfile(uid){
+      if(!uid) return;
+      state.viewingProfileUid = uid;
+      state.currentPage = "memberProfile";
+      renderMain();
+    }
+
+    /* 4) CHAT PAGE (SAFE VERSION) */
+    function renderChatPage(){
+      try{
+        const user = state.selectedDmUid ? (state.profiles[state.selectedDmUid] || {}) : null;
+        const messages = selectedThreadMessages();
+
+        return `
+          <div class="page ${state.currentPage==="chat"?"active":""}" id="page-chat">
+            <div class="topbar">
+              <button class="icon-btn" id="chatBackBtn">←</button>
+
+              <div id="chatOpenProfile" style="cursor:pointer">
+                <div>${user?.displayName || user?.email || "Chat"}</div>
+              </div>
+            </div>
+
+            <div class="page-body">
+              <div>
+                ${
+                  messages.length
+                    ? messages.map(m=>`
+                      <div>
+                        ${m.text || ""}
+                      </div>
+                    `).join("")
+                    : "No messages"
+                }
+              </div>
+
+              <div>
+                <input id="dmInput" placeholder="Type message...">
+                <button id="sendDmBtn">Send</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }catch(e){
+        console.error("Chat render error:", e);
+        return "";
+      }
     }
     function unreadForUid(uid){
       const threadId = state.user ? threadIdFor(state.user.uid, uid) : "";
@@ -1455,6 +1511,7 @@
         ${renderSidebar()}
         ${renderHomePage()}
         ${renderBasePage()}
+        ${renderChatPage()}
         ${renderProfilePage()}
         ${renderMemberProfilePage()}
         ${renderSettingsDrawer()}
@@ -1588,6 +1645,9 @@
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
+
+      $("#chatBackBtn") && ($("#chatBackBtn").onclick=goBackToBase);
+      $("#chatOpenProfile") && ($("#chatOpenProfile").onclick=()=>{ if(state.selectedDmUid) openMemberProfile(state.selectedDmUid); });
 
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
