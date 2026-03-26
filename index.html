@@ -389,8 +389,8 @@
         <svg class="${cls}" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="160" height="160" rx="44" fill="url(#g)"/>
           <path d="M28 112c0-16 10-28 28-30 7-18 25-28 52-28 26 0 45 10 52 28 18 2 28 14 28 30v10H28v-10Z" fill="#F4F4F7"/>
-          <path d="M38 88c-10-12-16-23-16-41 18 8 28 14 39 21" stroke="#F4F4F7" stroke-width="2" stroke-linecap="round"/>
-          <path d="M122 88c10-12 16-23 16-41-18 8-28 14-39 21" stroke="#F4F4F7" stroke-width="2" stroke-linecap="round"/>
+          <path d="M38 88c-10-12-16-23-16-41 18 8 28 14 39 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <path d="M122 88c10-12 16-23 16-41-18 8-28 14-39 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
           <circle cx="66" cy="97" r="5" fill="#0D0D12"/>
           <circle cx="94" cy="97" r="5" fill="#0D0D12"/>
           <path d="M74 111c4 3 8 4 12 0" stroke="#0D0D12" stroke-width="3" stroke-linecap="round"/>
@@ -1121,6 +1121,9 @@
                   ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
+                <div class="row" style="margin-top:10px">
+                  <button class="tool-btn" id="sendMsgFromProfileBtn">💬 Send Message</button>
+                </div>
                 <div class="xp-box">
                   XP: ${esc(p.xp || 0)} ⭐
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
@@ -1519,6 +1522,13 @@
       $("#toggleNotifications") && ($("#toggleNotifications").onclick=()=>toggleProfileFlag("notificationsEnabled"));
       $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
       $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
+      $("#sendMsgFromProfileBtn") && ($("#sendMsgFromProfileBtn").onclick=()=>{
+        if(state.viewingProfileUid){
+          state.selectedDmUid = state.viewingProfileUid;
+          state.currentPage = "base";
+          renderMain();
+        }
+      });
 
       $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
 
