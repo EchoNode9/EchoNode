@@ -261,8 +261,8 @@
     }
     .sidebar.open{transform:translateX(0)}
     .sidebar-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .sidebar-backdrop{position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.42); display:none}
-    .sidebar-backdrop.show{display:block}
+    .sidebar-backdrop{position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.42); display:none; pointer-events:none}
+    .sidebar-backdrop.show{display:block; pointer-events:auto}
 
     .bottom-nav{
       position:fixed; left:50%; transform:translateX(-50%); bottom:8px; z-index:40;
@@ -282,9 +282,9 @@
 
     .modal,.drawer{
       position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.52);
-      display:none; align-items:flex-end; justify-content:center; padding:12px;
+      display:none; align-items:flex-end; justify-content:center; padding:12px; pointer-events:none;
     }
-    .modal.open,.drawer.open{display:flex}
+    .modal.open,.drawer.open{display:flex; pointer-events:auto}
     .sheet{
       width:min(460px,100%); max-height:90vh; overflow:auto; background:#0f121a;
       border:1px solid rgba(255,255,255,.06); border-radius:24px 24px 18px 18px; padding:14px; box-shadow:var(--shadow);
@@ -1824,175 +1824,275 @@
     }
 
     
+    
     function installGlobalDelegates(){
       if(window.__echonodeDelegatesInstalled) return;
       window.__echonodeDelegatesInstalled = true;
 
-      document.addEventListener("click", async (e)=>{
-        const target = e.target.closest([
-          "[data-page]",
-          ".community-item[data-community]",
-          "[data-like-post]",
-          "[data-open-member]",
-          "[data-open-chat]",
-          "[data-result-type]",
-          "[data-unblock]",
-          "#openSidebarBtn",
-          "#closeSidebarBtn",
-          "#sidebarBackdrop",
-          "#openSettingsBtn",
-          "#closeSettingsBtn",
-          "#settingsDrawer",
-          "#closeAiBtn",
-          "#aiDrawer",
-          "#storeDrawer",
-          "#createPostDrawer",
-          "#createCommunityDrawer",
-          "#openStoreBtn",
-          "#openAiBtn",
-          "#openCreatePostBtn",
-          "#closeCreatePostBtn",
-          "#homeAssistantCard",
-          "#settingsAssistantCard",
-          "#closeStoreBtn",
-          "#buyBadgeBtn",
-          "#buyGlowBtn",
-          "#buyPawBtn",
-          "#buySparkBtn",
-          "#openCreateCommunityBtn",
-          "#closeCreateCommunityBtn",
-          "#createCommunityBtn",
-          "#backToBaseBtn",
-          "#memberMenuBtn",
-          "#memberMenuMessage",
-          "#memberMenuReport",
-          "#memberMenuBlock",
-          "#noticeBtn",
-          "#sendPostBtn",
-          "#sendDmBtn",
-          "#chatBackBtn",
-          "#chatOpenProfile",
-          "#openProfileSettingsBtn",
-          "#openProfileSettingsBtn2",
-          "#closeEditorBtn",
-          "#saveProfileBtn",
-          "#saveSettingsBtn",
-          "#toggleBirthday",
-          "#toggleCountry",
-          "#toggleNotifications",
-          "#blockSelectedBtn",
-          "#logoutBtn"
-        ].join(","));
+      const CLICK_SELECTORS = [
+        "[data-page]",
+        ".community-item[data-community]",
+        "[data-like-post]",
+        "[data-open-member]",
+        "[data-open-chat]",
+        "[data-result-type]",
+        "[data-unblock]",
+        "#openSidebarBtn",
+        "#closeSidebarBtn",
+        "#sidebarBackdrop",
+        "#openSettingsBtn",
+        "#closeSettingsBtn",
+        "#settingsDrawer",
+        "#closeAiBtn",
+        "#aiDrawer",
+        "#storeDrawer",
+        "#createPostDrawer",
+        "#createCommunityDrawer",
+        "#openStoreBtn",
+        "#openAiBtn",
+        "#openCreatePostBtn",
+        "#closeCreatePostBtn",
+        "#homeAssistantCard",
+        "#settingsAssistantCard",
+        "#closeStoreBtn",
+        "#buyBadgeBtn",
+        "#buyGlowBtn",
+        "#buyPawBtn",
+        "#buySparkBtn",
+        "#openCreateCommunityBtn",
+        "#closeCreateCommunityBtn",
+        "#createCommunityBtn",
+        "#backToBaseBtn",
+        "#memberMenuBtn",
+        "#memberMenuMessage",
+        "#memberMenuReport",
+        "#memberMenuBlock",
+        "#noticeBtn",
+        "#sendPostBtn",
+        "#sendDmBtn",
+        "#chatBackBtn",
+        "#chatOpenProfile",
+        "#openProfileSettingsBtn",
+        "#openProfileSettingsBtn2",
+        "#closeEditorBtn",
+        "#saveProfileBtn",
+        "#saveSettingsBtn",
+        "#toggleBirthday",
+        "#toggleCountry",
+        "#toggleNotifications",
+        "#blockSelectedBtn",
+        "#logoutBtn"
+      ].join(",");
+
+      const getOrigin = (event) => {
+        const raw = event.target;
+        if(raw instanceof Element) return raw;
+        return raw && raw.parentElement ? raw.parentElement : null;
+      };
+
+      document.addEventListener("click", async (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+        const target = origin.closest(CLICK_SELECTORS);
         if(!target) return;
 
         if(target.matches("[data-page]")){
-          state.currentPage=target.dataset.page; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; state.storeOpen=false; renderMain(); return;
+          state.currentPage = target.dataset.page;
+          state.memberMenuOpen = false;
+          state.settingsOpen = false;
+          state.aiOpen = false;
+          state.storeOpen = false;
+          renderMain();
+          return;
         }
+
         if(target.matches(".community-item[data-community]")){
-          state.currentCommunity=target.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); return;
+          state.currentCommunity = target.dataset.community;
+          state.currentPage = "home";
+          state.sidebarOpen = false;
+          renderMain();
+          return;
         }
+
         if(target.matches("[data-like-post]")){
-          likePost(target.dataset.likeCommunity, target.dataset.likePost); return;
+          await likePost(target.dataset.likeCommunity, target.dataset.likePost);
+          return;
         }
+
         if(target.matches("[data-open-member]")){
-          openMemberProfile(target.dataset.openMember); return;
+          openMemberProfile(target.dataset.openMember);
+          return;
         }
+
         if(target.matches("[data-open-chat]")){
-          openChatWith(target.dataset.openChat); return;
+          openChatWith(target.dataset.openChat);
+          return;
         }
+
         if(target.matches("[data-result-type]")){
-          if(target.dataset.resultType==="community"){ state.currentCommunity=target.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
-          else { state.viewingProfileUid=target.dataset.resultId; state.currentPage="memberProfile"; state.searchHome=""; }
-          renderMain(); return;
+          if(target.dataset.resultType === "community"){
+            state.currentCommunity = target.dataset.resultId;
+            state.currentPage = "home";
+          }else{
+            state.viewingProfileUid = target.dataset.resultId;
+            state.currentPage = "memberProfile";
+          }
+          state.searchHome = "";
+          renderMain();
+          return;
         }
+
         if(target.matches("[data-unblock]")){
-          unblockUser(target.dataset.unblock); return;
+          await unblockUser(target.dataset.unblock);
+          return;
         }
 
-        if(target.id==="openSidebarBtn"){ state.sidebarOpen=true; renderMain(); return; }
-        if(target.id==="closeSidebarBtn" || target.id==="sidebarBackdrop"){ state.sidebarOpen=false; renderMain(); return; }
-        if(target.id==="openSettingsBtn"){ state.settingsOpen=true; renderMain(); return; }
-        if(target.id==="closeSettingsBtn" || target.id==="settingsDrawer"){ if(target.id==="settingsDrawer" && e.target.id!=="settingsDrawer"){} else { state.settingsOpen=false; renderMain(); return; } }
-        if(target.id==="closeAiBtn" || target.id==="aiDrawer"){ if(target.id==="aiDrawer" && e.target.id!=="aiDrawer"){} else { state.aiOpen=false; renderMain(); return; } }
-        if(target.id==="openStoreBtn"){ state.storeOpen=true; renderMain(); return; }
-        if(target.id==="storeDrawer"){ if(e.target.id==="storeDrawer"){ state.storeOpen=false; renderMain(); return; } }
-        if(target.id==="openAiBtn"){ state.aiOpen=true; renderMain(); return; }
-        if(target.id==="openCreatePostBtn"){ state.composeOpen=true; renderMain(); return; }
-        if(target.id==="createPostDrawer"){ if(e.target.id==="createPostDrawer"){ state.composeOpen=false; renderMain(); return; } }
-        if(target.id==="createCommunityDrawer"){ if(e.target.id==="createCommunityDrawer"){ state.createCommunityOpen=false; renderMain(); return; } }
-        if(target.id==="homeAssistantCard"){ state.settingsOpen=true; renderMain(); return; }
-        if(target.id==="settingsAssistantCard"){ state.aiOpen=true; renderMain(); return; }
-        if(target.id==="closeStoreBtn"){ state.storeOpen=false; renderMain(); return; }
-        if(target.id==="closeCreatePostBtn"){ state.composeOpen=false; renderMain(); return; }
-        if(target.id==="buyBadgeBtn"){ buyStoreItem("badge", 20); return; }
-        if(target.id==="buyGlowBtn"){ buyStoreItem("glow", 30); return; }
-        if(target.id==="buyPawBtn"){ buyStoreItem("paw", 15); return; }
-        if(target.id==="buySparkBtn"){ buyStoreItem("spark", 10); return; }
-        if(target.id==="openCreateCommunityBtn"){ state.createCommunityOpen=true; renderMain(); return; }
-        if(target.id==="closeCreateCommunityBtn"){ state.createCommunityOpen=false; renderMain(); return; }
-        if(target.id==="createCommunityBtn"){ createCommunity(); return; }
-        if(target.id==="backToBaseBtn" || target.id==="chatBackBtn"){ state.memberMenuOpen=false; goBackToBase(); state.viewingProfileUid=""; return; }
-        if(target.id==="memberMenuBtn"){ state.memberMenuOpen=!state.memberMenuOpen; renderMain(); return; }
-        if(target.id==="memberMenuMessage"){ state.memberMenuOpen=false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); return; }
-        if(target.id==="memberMenuReport"){ state.memberMenuOpen=false; await reportMember(state.viewingProfileUid); return; }
-        if(target.id==="memberMenuBlock"){ state.memberMenuOpen=false; state.selectedDmUid=state.viewingProfileUid; blockSelectedUser(); return; }
-        if(target.id==="noticeBtn"){
+        if(target.id === "openSidebarBtn"){ state.sidebarOpen = true; renderMain(); return; }
+        if(target.id === "closeSidebarBtn" || target.id === "sidebarBackdrop"){ state.sidebarOpen = false; renderMain(); return; }
+
+        if(target.id === "openSettingsBtn"){ state.settingsOpen = true; renderMain(); return; }
+        if(target.id === "closeSettingsBtn"){ state.settingsOpen = false; renderMain(); return; }
+        if(target.id === "settingsDrawer" && origin.id === "settingsDrawer"){ state.settingsOpen = false; renderMain(); return; }
+
+        if(target.id === "openStoreBtn"){ state.storeOpen = true; renderMain(); return; }
+        if(target.id === "closeStoreBtn"){ state.storeOpen = false; renderMain(); return; }
+        if(target.id === "storeDrawer" && origin.id === "storeDrawer"){ state.storeOpen = false; renderMain(); return; }
+
+        if(target.id === "openAiBtn"){ state.aiOpen = true; renderMain(); return; }
+        if(target.id === "closeAiBtn"){ state.aiOpen = false; renderMain(); return; }
+        if(target.id === "aiDrawer" && origin.id === "aiDrawer"){ state.aiOpen = false; renderMain(); return; }
+
+        if(target.id === "openCreatePostBtn"){ state.composeOpen = true; renderMain(); return; }
+        if(target.id === "closeCreatePostBtn"){ state.composeOpen = false; renderMain(); return; }
+        if(target.id === "createPostDrawer" && origin.id === "createPostDrawer"){ state.composeOpen = false; renderMain(); return; }
+
+        if(target.id === "openCreateCommunityBtn"){ state.createCommunityOpen = true; renderMain(); return; }
+        if(target.id === "closeCreateCommunityBtn"){ state.createCommunityOpen = false; renderMain(); return; }
+        if(target.id === "createCommunityDrawer" && origin.id === "createCommunityDrawer"){ state.createCommunityOpen = false; renderMain(); return; }
+        if(target.id === "createCommunityBtn"){ await createCommunity(); return; }
+
+        if(target.id === "homeAssistantCard"){ state.settingsOpen = true; renderMain(); return; }
+        if(target.id === "settingsAssistantCard"){ state.aiOpen = true; renderMain(); return; }
+
+        if(target.id === "buyBadgeBtn"){ await buyStoreItem("badge", 20); return; }
+        if(target.id === "buyGlowBtn"){ await buyStoreItem("glow", 30); return; }
+        if(target.id === "buyPawBtn"){ await buyStoreItem("paw", 15); return; }
+        if(target.id === "buySparkBtn"){ await buyStoreItem("spark", 10); return; }
+
+        if(target.id === "backToBaseBtn"){ state.memberMenuOpen = false; state.viewingProfileUid = ""; goBackToBase(); return; }
+        if(target.id === "chatBackBtn"){ state.memberMenuOpen = false; goBackToBase(); return; }
+
+        if(target.id === "memberMenuBtn"){ state.memberMenuOpen = !state.memberMenuOpen; renderMain(); return; }
+        if(target.id === "memberMenuMessage"){ state.memberMenuOpen = false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); return; }
+        if(target.id === "memberMenuReport"){ state.memberMenuOpen = false; if(state.viewingProfileUid) await reportMember(state.viewingProfileUid); return; }
+        if(target.id === "memberMenuBlock"){ state.memberMenuOpen = false; state.selectedDmUid = state.viewingProfileUid; await blockSelectedUser(); return; }
+
+        if(target.id === "noticeBtn"){
           const granted = await ensureNotificationPermission();
-          if(granted){ toast("Notifications enabled", "You will get real browser alerts for DMs and likes."); browserNotify("EchoNode notifications are on", "DMs and likes will now reach you."); }
-          else toast("Notifications", "Browser permission is off or blocked.");
+          if(granted){
+            toast("Notifications enabled", "You will get real browser alerts for DMs and likes.");
+            browserNotify("EchoNode notifications are on", "DMs and likes will now reach you.");
+          }else{
+            toast("Notifications", "Browser permission is off or blocked.");
+          }
           return;
         }
-        if(target.id==="sendPostBtn"){ createPost(); return; }
-        if(target.id==="sendDmBtn"){ e.preventDefault(); sendDM(); return; }
-        if(target.id==="chatOpenProfile"){ if(state.selectedDmUid) openMemberProfile(state.selectedDmUid); return; }
-        if(target.id==="openProfileSettingsBtn" || target.id==="openProfileSettingsBtn2"){ $("#editorModal")?.classList.add("open"); return; }
-        if(target.id==="closeEditorBtn"){ $("#editorModal")?.classList.remove("open"); return; }
-        if(target.id==="saveProfileBtn"){ saveProfile(); return; }
-        if(target.id==="saveSettingsBtn"){ saveSettings(); return; }
-        if(target.id==="toggleBirthday"){ toggleProfileFlag("showBirthday"); return; }
-        if(target.id==="toggleCountry"){ toggleProfileFlag("showCountry"); return; }
-        if(target.id==="toggleNotifications"){ toggleProfileFlag("notificationsEnabled"); return; }
-        if(target.id==="blockSelectedBtn"){ blockSelectedUser(); return; }
-        if(target.id==="logoutBtn"){ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; return; }
-      }, true);
 
-      document.addEventListener("input", (e)=>{
-        if(e.target.id==="homeSearch"){
-          state.searchHome=e.target.value;
+        if(target.id === "sendPostBtn"){ await createPost(); return; }
+        if(target.id === "sendDmBtn"){ e.preventDefault(); await sendDM(); return; }
+        if(target.id === "chatOpenProfile"){ if(state.selectedDmUid) openMemberProfile(state.selectedDmUid); return; }
+
+        if(target.id === "openProfileSettingsBtn" || target.id === "openProfileSettingsBtn2"){
+          document.getElementById("editorModal")?.classList.add("open");
+          return;
+        }
+        if(target.id === "closeEditorBtn"){ document.getElementById("editorModal")?.classList.remove("open"); return; }
+        if(target.id === "saveProfileBtn"){ await saveProfile(); return; }
+        if(target.id === "saveSettingsBtn"){ await saveSettings(); return; }
+
+        if(target.id === "toggleBirthday"){ await toggleProfileFlag("showBirthday"); return; }
+        if(target.id === "toggleCountry"){ await toggleProfileFlag("showCountry"); return; }
+        if(target.id === "toggleNotifications"){ await toggleProfileFlag("notificationsEnabled"); return; }
+
+        if(target.id === "blockSelectedBtn"){ await blockSelectedUser(); return; }
+        if(target.id === "logoutBtn"){ await auth.signOut(); state.currentPage = "home"; state.settingsOpen = false; return; }
+      }, { passive: true });
+
+      document.addEventListener("input", (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+        if(origin.id === "homeSearch"){
+          state.searchHome = origin.value;
           renderMain();
-          const next=document.getElementById("homeSearch");
-          if(next){ next.focus(); next.setSelectionRange(state.searchHome.length,state.searchHome.length); }
+          const next = document.getElementById("homeSearch");
+          if(next){
+            next.focus();
+            next.setSelectionRange(state.searchHome.length, state.searchHome.length);
+          }
           return;
         }
-        if(e.target.id==="userSearch"){
-          state.searchBase=e.target.value;
+        if(origin.id === "userSearch"){
+          state.searchBase = origin.value;
           renderMain();
-          const next=document.getElementById("userSearch");
-          if(next){ next.focus(); next.setSelectionRange(state.searchBase.length,state.searchBase.length); }
+          const next = document.getElementById("userSearch");
+          if(next){
+            next.focus();
+            next.setSelectionRange(state.searchBase.length, state.searchBase.length);
+          }
           return;
         }
-        if(e.target.id==="postLinkInput") state.draftPostLink=e.target.value;
-      }, true);
+        if(origin.id === "postLinkInput"){
+          state.draftPostLink = origin.value;
+        }
+      });
 
-      document.addEventListener("keydown", (e)=>{
-        if(e.target.id==="composer" && e.key==="Enter" && !e.shiftKey){ e.preventDefault(); createPost(); return; }
-        if(e.target.id==="dmInput" && e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); return; }
-      }, true);
+      document.addEventListener("keydown", (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+        if(origin.id === "composer" && e.key === "Enter" && !e.shiftKey){
+          e.preventDefault();
+          createPost();
+          return;
+        }
+        if(origin.id === "dmInput" && e.key === "Enter" && !e.shiftKey){
+          e.preventDefault();
+          sendDM();
+          return;
+        }
+      });
 
-      document.addEventListener("change", async (e)=>{
-        if(e.target.id==="postImageInput"){
-          const f = e.target.files && e.target.files[0];
+      document.addEventListener("change", async (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+
+        if(origin.id === "postImageInput"){
+          const f = origin.files && origin.files[0];
           if(!f) return;
           state.draftPostImage = await fileToDataUrl(f);
           toast("Image ready", "Your post image is attached");
           renderMain();
+          return;
         }
-      }, true);
+      });
 
-      document.addEventListener("submit", (e)=>{
-        const form = e.target.closest("#chatSendForm");
-        if(form){ e.preventDefault(); sendDM(); }
-      }, true);
+      document.addEventListener("submit", (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+        const form = origin.closest("#chatSendForm");
+        if(form){
+          e.preventDefault();
+          sendDM();
+        }
+      });
+
+      document.addEventListener("pointerup", (e) => {
+        const origin = getOrigin(e);
+        if(!origin) return;
+        const actionable = origin.closest(CLICK_SELECTORS);
+        if(actionable && actionable.matches("button, [data-page], [data-open-member], [data-open-chat], [data-result-type], .community-item[data-community]")){
+          actionable.blur?.();
+        }
+      });
     }
 
 
