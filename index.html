@@ -361,7 +361,7 @@
     const defaultProfile = {
       displayName:"", email:"", mood:"Late night cat-energy online", level:1, xp:0,
       mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
-      musicUrl:"", presence:"online", showcase1:"", showcase2:"", showcase3:"",
+      musicUrl:"", presence:"online", gender:"", friendsVisibility:"public", showcase1:"", showcase2:"", showcase3:"",
       founder:false, countryCode:"SA", countryFlag:"🇸🇦", countryName:"Saudi Arabia",
       birthday:"", blockedUsers:{}, securityKey:"", ...defaultPrivacy
     };
@@ -370,8 +370,8 @@
       authMode:"welcome", accountMode:"signin", otpSent:false, accountExists:false,
       email:"", displayName:"", user:null, currentCommunity:"all", currentPage:"home",
       communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
-      selectedDmUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
-      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"", viewProfileUid:"",
+      selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
+      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
       profile:{ ...defaultProfile }
     };
 
@@ -650,9 +650,9 @@
       const blocked = state.profile.blockedUsers || {};
       const users = Object.entries(state.profiles)
         .filter(([uid,p]) => uid !== (state.user && state.user.uid) && !blocked[uid] && (
-          String(p.displayName||"").toLowerCase().includes(q) || String(p.email||"").toLowerCase().includes(q)
+          String(p.displayName||"").toLowerCase().includes(q)
         ))
-        .map(([uid,p])=>({type:"user", id:uid, title:p.displayName || p.email || "User", sub:p.email || p.mood || ""}));
+        .map(([uid,p])=>({type:"user", id:uid, title:p.displayName || "User", sub:p.mood || ""}));
       return [...communities, ...users].slice(0,8);
     }
 
@@ -660,7 +660,7 @@
       const q = state.searchBase.trim().toLowerCase();
       const users = friendCandidates();
       if(!q) return users;
-      return users.filter(u => String(u.displayName||"").toLowerCase().includes(q) || String(u.email||"").toLowerCase().includes(q) || String(u.mood||"").toLowerCase().includes(q));
+      return users.filter(u => String(u.displayName||"").toLowerCase().includes(q) || String(u.mood||"").toLowerCase().includes(q) || String(u.playingGame||"").toLowerCase().includes(q));
     }
 
     async function createPost(){
@@ -730,6 +730,8 @@
       state.profile.email = ($("#settingsEmail").value || "").trim().toLowerCase() || state.profile.email;
       state.profile.securityKey = ($("#settingsSecurityKey").value || "").trim();
       state.profile.birthday = ($("#settingsBirthday").value || "").trim();
+      state.profile.gender = ($("#settingsGender").value || "").trim();
+      state.profile.friendsVisibility = ($("#settingsFriendsVisibility").value || "public").trim();
       state.profile.countryCode = country.code;
       state.profile.countryFlag = country.flag;
       state.profile.countryName = country.name;
@@ -738,6 +740,8 @@
         emailKey: emailKey(state.profile.email),
         securityKey: state.profile.securityKey,
         birthday: state.profile.birthday,
+        gender: state.profile.gender,
+        friendsVisibility: state.profile.friendsVisibility,
         countryCode: state.profile.countryCode,
         countryFlag: state.profile.countryFlag,
         countryName: state.profile.countryName,
@@ -929,7 +933,7 @@
             <div class="section-title">FRIENDS</div>
             <div class="friends-strip">
               ${users.slice(0,4).map(u=>`
-                <div class="friend-stack" data-open-profile="${u.uid}">
+                <div class="friend-stack" data-select-dm="${u.uid}">
                   <div class="friend-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                   <div class="friend-name">${esc((u.displayName || "User").slice(0,8))}</div>
                 </div>
@@ -947,7 +951,7 @@
                   <div class="thread-item" data-select-dm="${u.uid}">
                     <div class="thread-row">
                       <div class="thread-left">
-                        <div class="post-avatar" data-open-profile="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                        <div class="post-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                         <div>
                           <div class="thread-name">${esc(u.displayName || u.email || "User")}</div>
                           <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
@@ -988,12 +992,8 @@
       `;
     }
 
-    
     function renderProfilePage(){
-      const viewingOther = !!state.viewProfileUid;
-      const otherProfile = viewingOther ? (state.profiles[state.viewProfileUid] || {}) : {};
-      const p = viewingOther ? { ...defaultProfile, ...otherProfile } : state.profile;
-      const avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || state.email));
+      const p=state.profile, avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
       let musicCard=`<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from Edit Profile.</div>`;
       const sp=spotifyEmbed(p.musicUrl);
       if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
@@ -1008,9 +1008,8 @@
           <div class="topbar">
             <div>
               <div class="top-title">Profile</div>
-              <div class="top-sub">${viewingOther ? "Member profile" : "Your EchoNode identity"}</div>
+              <div class="top-sub">Your EchoNode identity</div>
             </div>
-            ${viewingOther ? `<button class="tool-btn" id="backToBaseBtn">Back to Base</button>` : ``}
           </div>
 
           <div class="page-body fade">
@@ -1019,12 +1018,12 @@
               <div class="profile-body">
                 <div class="avatar-big">${avatarInner}</div>
                 <div class="name-line">
-                  <div class="name">${esc(p.displayName || p.email?.split("@")[0] || "User")}</div>
+                  <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
-                  ${!viewingOther ? `<button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>` : ``}
-                  ${p.founder ? `<span class="badge">Founder</span>` : ``}
+                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
+                  ${state.founder ? `<span class="badge">Founder</span>` : ``}
                   ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
@@ -1050,7 +1049,7 @@
                 <div class="section-title">FRIENDS</div>
                 <div class="friends-strip">
                   ${friends.map(f=>`
-                    <div class="friend-stack" data-open-profile="${f.uid}">
+                    <div class="friend-stack" data-open-member="${f.uid}">
                       <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || f.email || "U"))}</div>
                       <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
                     </div>
@@ -1067,7 +1066,79 @@
       `;
     }
 
-    
+
+    function renderMemberProfilePage(){
+      const uid = state.viewingProfileUid;
+      const p = uid ? (state.profiles[uid] || {}) : null;
+      if(!p) return '';
+      const avatarInner = p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || "U"));
+      let musicCard=`<div class="card-title">Music</div><div class="card-sub">No shared music yet.</div>`;
+      const sp=spotifyEmbed(p.musicUrl);
+      if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+      else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
+      else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
+      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
+      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
+      const playingLine = p.presence === "playing" && p.playingGame ? `<span class="badge">${icon("game")} ${esc(p.playingGame)}</span>` : ``;
+      const spaceTitle = p.gender === "female" ? "Her Space" : (p.gender === "male" ? "His Space" : "Their Space");
+      const showFriends = p.friendsVisibility !== "private";
+      const theirFriends = Object.entries(state.profiles)
+        .filter(([otherUid]) => otherUid !== uid)
+        .slice(0,4)
+        .map(([otherUid,other])=>({uid:otherUid,...other}));
+      return `
+        <div class="page ${state.currentPage==="memberProfile"?"active":""}" id="page-member-profile">
+          <div class="topbar">
+            <div class="top-left">
+              <button class="icon-btn" id="backToBaseBtn">${icon("arrow")}</button>
+              <div>
+                <div class="top-title">${esc(p.displayName || "Profile")}</div>
+                <div class="top-sub">Member profile</div>
+              </div>
+            </div>
+          </div>
+          <div class="page-body fade">
+            <div class="profile-hero">
+              <div class="cover" style="${p.cover ? `background-image:url('${p.cover}')` : ''}"></div>
+              <div class="profile-body">
+                <div class="avatar-big">${avatarInner}</div>
+                <div class="name-line">
+                  <div class="name">${esc(p.displayName || "User")}</div>
+                  <span class="badge">${esc(p.presence || "online")}</span>
+                  ${countryLine}
+                  ${birthdayLine}
+                  ${playingLine}
+                </div>
+                <div class="meta">${esc(p.mood || "")}</div>
+                <div class="card" style="margin-top:16px">
+                  <div class="card-title">${spaceTitle}</div>
+                  <div class="card-sub">${esc(p.mySpace || "")}</div>
+                </div>
+                <div class="card" style="margin-top:12px">${musicCard}</div>
+                <div class="section-title">SHOWCASE</div>
+                <div class="showcase-grid">
+                  <div class="showcase-item">${p.showcase1 ? `<img src="${p.showcase1}" alt="">` : "Slot 1"}</div>
+                  <div class="showcase-item">${p.showcase2 ? `<img src="${p.showcase2}" alt="">` : "Slot 2"}</div>
+                  <div class="showcase-item">${p.showcase3 ? `<img src="${p.showcase3}" alt="">` : "Slot 3"}</div>
+                </div>
+                <div class="section-title">FRIENDS</div>
+                ${showFriends ? `
+                  <div class="friends-strip">
+                    ${theirFriends.map(f=>`
+                      <div class="friend-stack">
+                        <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || "U"))}</div>
+                        <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
+                      </div>
+                    `).join("")}
+                  </div>
+                ` : `<div class="card"><div class="card-sub">This friends list is private.</div></div>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderSettingsDrawer(){
       const blocked = Object.keys(state.profile.blockedUsers || {});
       return `
@@ -1082,6 +1153,15 @@
             <input class="input" id="settingsEmail" placeholder="Email" value="${esc(state.profile.email || state.email)}">
             <input class="input" id="settingsSecurityKey" placeholder="Security Key (your own strong code)" value="${esc(state.profile.securityKey || "")}">
             <input class="input" id="settingsBirthday" type="date" value="${esc(state.profile.birthday || "")}">
+            <select class="select input" id="settingsGender">
+              <option value="" ${!state.profile.gender ? "selected" : ""}>Gender not set</option>
+              <option value="male" ${state.profile.gender==="male" ? "selected" : ""}>Male</option>
+              <option value="female" ${state.profile.gender==="female" ? "selected" : ""}>Female</option>
+            </select>
+            <select class="select input" id="settingsFriendsVisibility">
+              <option value="public" ${state.profile.friendsVisibility==="public" ? "selected" : ""}>Friends list public</option>
+              <option value="private" ${state.profile.friendsVisibility==="private" ? "selected" : ""}>Friends list private</option>
+            </select>
             <select class="select input" id="settingsCountry">
               ${countryOptions.map(c=>`<option value="${c.code}" ${state.profile.countryCode===c.code?"selected":""}>${c.flag} ${c.name}</option>`).join("")}
             </select>
@@ -1204,6 +1284,7 @@
         ${renderHomePage()}
         ${renderBasePage()}
         ${renderProfilePage()}
+        ${renderMemberProfilePage()}
         ${renderSettingsDrawer()}
         ${renderAIDrawer()}
         ${renderCreateCommunityDrawer()}
@@ -1262,15 +1343,14 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; if(btn.dataset.page==="profile"){ state.viewProfileUid=""; } state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
       $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
-      $$("[data-select-dm]").forEach(el=>el.onclick=()=>{ state.selectedDmUid=el.dataset.selectDm; state.currentPage="base"; renderMain(); });
-      $$("[data-open-profile]").forEach(el=>el.onclick=(e)=>{ e.stopPropagation(); state.viewProfileUid=el.dataset.openProfile; state.currentPage="profile"; renderMain(); });
+      $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.currentPage="memberProfile"; renderMain(); });
 
       $$("[data-result-type]").forEach(el=>el.onclick=()=>{
         if(el.dataset.resultType==="community"){ state.currentCommunity=el.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
-        else { state.selectedDmUid=el.dataset.resultId; state.currentPage="base"; state.searchHome=""; }
+        else { state.viewingProfileUid=el.dataset.resultId; state.currentPage="memberProfile"; state.searchHome=""; }
         renderMain();
       });
 
@@ -1281,6 +1361,8 @@
       $("#openSettingsBtn") && ($("#openSettingsBtn").onclick=()=>{ state.settingsOpen=true; renderMain(); });
       $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
       $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
+
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; state.viewingProfileUid=""; renderMain(); });
 
       $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
       $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
@@ -1313,8 +1395,8 @@
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
 
+      $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; state.viewProfileUid=""; renderMain(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
@@ -1351,6 +1433,8 @@
         email: state.profile.email || state.email, emailKey: emailKey(state.profile.email || state.email),
         founder: state.founder,
         birthday: state.profile.birthday || "",
+        gender: state.profile.gender || "",
+        friendsVisibility: state.profile.friendsVisibility || "public",
         countryCode: state.profile.countryCode || "SA",
         countryFlag: state.profile.countryFlag || "🇸🇦",
         countryName: state.profile.countryName || "Saudi Arabia",
