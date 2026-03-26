@@ -776,31 +776,65 @@
 
         return `
           <div class="page ${state.currentPage==="chat"?"active":""}" id="page-chat">
-            <div class="topbar">
-              <button class="icon-btn" id="chatBackBtn">←</button>
-
-              <div id="chatOpenProfile" style="cursor:pointer">
-                <div>${user?.displayName || user?.email || "Chat"}</div>
+            <!-- HEADER -->
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(9,11,17,.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.05);position:sticky;top:0;z-index:10">
+              <button id="chatBackBtn" style="background:none;border:none;font-size:22px;color:#fff;cursor:pointer;padding:4px 8px">←</button>
+              <div id="chatOpenProfile" style="display:flex;align-items:center;gap:10px;cursor:pointer;flex:1">
+                <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;background:#222;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;border:1px solid rgba(255,255,255,.1)">
+                  ${user?.avatar ? `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover">` : esc(initials(user?.displayName || user?.email || "U"))}
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:15px">${esc(user?.displayName || user?.email || "Chat")}</div>
+                  <div style="font-size:11px;color:var(--muted)">${esc((state.statusMap[state.selectedDmUid] || {}).state || user?.presence || "offline")}</div>
+                </div>
               </div>
             </div>
 
-            <div class="page-body">
-              <div>
-                ${
-                  messages.length
-                    ? messages.map(m=>`
-                      <div>
-                        ${m.text || ""}
+            <!-- MESSAGES -->
+            <div style="padding:16px;padding-bottom:100px;display:flex;flex-direction:column">
+              ${
+                messages.length
+                ? messages.map(m=>`
+                  <div style="display:flex;${m.from===state.user.uid ? "justify-content:flex-end" : "justify-content:flex-start"};margin-bottom:12px">
+                    <div style="
+                      max-width:75%;
+                      padding:12px 16px;
+                      border-radius:20px;
+                      font-size:14px;
+                      line-height:1.5;
+                      box-shadow:0 4px 12px rgba(0,0,0,.1);
+                      ${
+                        m.from===state.user.uid
+                        ? "background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-bottom-right-radius:4px"
+                        : "background:#1e2433;color:#fff;border-bottom-left-radius:4px;border:1px solid rgba(255,255,255,.05)"
+                      }
+                    ">
+                      ${esc(m.text || "")}
+                      <div style="font-size:10px;margin-top:4px;opacity:0.7;text-align:${m.from===state.user.uid ? 'right' : 'left'}">
+                        ${esc(timeLabel(m.createdAt))}
                       </div>
-                    `).join("")
-                    : "No messages"
-                }
-              </div>
+                    </div>
+                  </div>
+                `).join("")
+                : `<div style="text-align:center;margin-top:40px;opacity:.5;font-size:14px">Start a conversation 👋</div>`
+              }
+            </div>
 
-              <div>
-                <input id="dmInput" placeholder="Type message...">
-                <button id="sendDmBtn">Send</button>
+            <!-- INPUT -->
+            <div style="position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + var(--safe-bottom));background:#090b11;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:10px;align-items:center;z-index:20">
+              <button id="emojiBtn" style="width:42px;height:42px;border:none;background:#1e2433;border-radius:14px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:#fff">😊</button>
+              <div style="flex:1;position:relative;display:flex;align-items:center">
+                <input id="dmInput" 
+                  placeholder="Write a message..." 
+                  style="width:100%;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 16px;background:#161b29;color:#fff;font-size:15px;outline:none"
+                >
               </div>
+              <button id="sendDmBtn" style="
+                width:42px;height:42px;border:none;border-radius:14px;
+                background:linear-gradient(135deg,var(--brand),var(--brand2));
+                color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+                box-shadow:0 4px 15px rgba(107,22,255,.3)
+              ">➤</button>
             </div>
           </div>
         `;
