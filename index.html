@@ -342,6 +342,10 @@
       appId: "1:1037833695190:web:02b349414c61f13322be77"
     };
 
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+
     auth.onAuthStateChanged(async (user) => {
       if(user){
         state.user = user;
@@ -352,7 +356,6 @@
         renderMain(); // 
       }
     });
-    const auth = firebase.auth();
     const db = firebase.database();
     const API = "https://echonode-api.onrender.com/auth";
     const FOUNDER_EMAIL = "aaoouua00@gmail.com";
@@ -1662,17 +1665,6 @@ function openMemberProfile(uid){
       $("#editorModal").classList.remove("open");
       renderMain(); toast("Saved", "Profile updated");
     }
-
-    auth.onAuthStateChanged(async (user) => {
-      if(user){
-        state.user = user;
-        state.email = user.email || state.email;
-        await loadProfile(user.uid);
-        await subscribeAll();
-        bindPresence();
-        renderMain(); // 
-      }
-    });
 
     renderAuth();
   </script>
