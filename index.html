@@ -373,6 +373,7 @@
       communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
       selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
       unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
+      notifiedLikes:{}, notifiedMessages:{},
       profile:{ ...defaultProfile }
     };
 
@@ -388,8 +389,8 @@
         <svg class="${cls}" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="160" height="160" rx="44" fill="url(#g)"/>
           <path d="M28 112c0-16 10-28 28-30 7-18 25-28 52-28 26 0 45 10 52 28 18 2 28 14 28 30v10H28v-10Z" fill="#F4F4F7"/>
-          <path d="M38 88c-10-12-16-23-16-41 18 8 28 14 39 21" stroke="#CFCFDC" stroke-width="2" stroke-linecap="round"/>
-          <path d="M122 88c10-12 16-23 16-41-18 8-28 14-39 21" stroke="#CFCFDC" stroke-width="2" stroke-linecap="round"/>
+          <path d="M38 88c-10-12-16-23-16-41 18 8 28 14 39 21" stroke="#F4F4F7" stroke-width="2" stroke-linecap="round"/>
+          <path d="M122 88c10-12 16-23 16-41-18 8-28 14-39 21" stroke="#F4F4F7" stroke-width="2" stroke-linecap="round"/>
           <circle cx="66" cy="97" r="5" fill="#0D0D12"/>
           <circle cx="94" cy="97" r="5" fill="#0D0D12"/>
           <path d="M74 111c4 3 8 4 12 0" stroke="#0D0D12" stroke-width="3" stroke-linecap="round"/>
@@ -427,6 +428,26 @@
     function resetDraftMedia(){
       state.draftPostImage = "";
       state.draftPostLink = "";
+    }
+
+    function browserNotify(title, body){
+      if(!state.profile.notificationsEnabled) return;
+      if(typeof Notification === "undefined") return;
+      if(Notification.permission === "granted"){
+        try{ new Notification(title, { body }); }catch(e){}
+      }
+    }
+
+    async function ensureNotificationPermission(){
+      if(typeof Notification === "undefined") return false;
+      if(Notification.permission === "granted") return true;
+      if(Notification.permission === "denied") return false;
+      try{
+        const result = await Notification.requestPermission();
+        return result === "granted";
+      }catch(e){
+        return false;
+      }
     }
 
     function timeLabel(ts){ if(!ts) return ""; const d=new Date(ts); return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}); }
@@ -496,7 +517,23 @@
 
     function subscribePostsForCommunity(communityId){
       const ref=db.ref("posts/" + communityId).limitToLast(100);
-      const cb=snap=>{ const val=snap.val()||{}; state.posts[communityId]=Object.entries(val).map(([id,v])=>({id,communityId,...v})); if(state.user) renderMain(); };
+      const cb=snap=>{
+        const val=snap.val()||{};
+        const entries = Object.entries(val).map(([id,v])=>({id,communityId,...v}));
+        entries.forEach(post=>{
+          if(!state.user || post.uid !== state.user.uid) return;
+          const prevLikes = state.notifiedLikes[post.id];
+          const nextLikes = Number(post.likes || 0);
+          if(prevLikes != null && nextLikes > prevLikes){
+            const diff = nextLikes - prevLikes;
+            toast("New likes", `${diff} new like${diff > 1 ? "s" : ""} on your post.`);
+            browserNotify("New likes on your post", `${diff} new like${diff > 1 ? "s" : ""} on your post.`);
+          }
+          state.notifiedLikes[post.id] = nextLikes;
+        });
+        state.posts[communityId]=entries;
+        if(state.user) renderMain();
+      };
       ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
     }
     function subscribeProfiles(){
@@ -513,7 +550,24 @@
       const ref=db.ref("dms");
       const cb=snap=>{
         const all=snap.val()||{}; state.threads={};
-        Object.entries(all).forEach(([threadId,val])=>{ if(threadId.includes(uid)) state.threads[threadId]=val; });
+        Object.entries(all).forEach(([threadId,val])=>{
+          if(threadId.includes(uid)){
+            state.threads[threadId]=val;
+            const msgs = Object.values((val && val.messages) || {});
+            const incoming = msgs.filter(m => m && m.to === uid && m.from !== uid).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+            const latestIncoming = incoming[incoming.length - 1];
+            if(latestIncoming){
+              const prevSeen = state.notifiedMessages[threadId];
+              const nextSeen = Number(latestIncoming.createdAt || 0);
+              if(prevSeen != null && nextSeen > prevSeen){
+                const senderName = latestIncoming.name || "New message";
+                toast(senderName, latestIncoming.text || "Sent you a message");
+                browserNotify(senderName, latestIncoming.text || "Sent you a message");
+              }
+              state.notifiedMessages[threadId] = nextSeen;
+            }
+          }
+        });
         if(state.user) renderMain();
       };
       ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
@@ -544,12 +598,12 @@
         <div class="auth fade ${state.authMode!=="welcome"?"hidden":""}">
           <div class="welcome-top">
             ${brandLogoMarkup()}
-            <h1>WELCOME TO<br>ECHONODE</h1>
-            <p>Your founder-edition social base. Communities, top drops, direct messages, and your own profile style.</p>
+            <h1>Welcome back</h1>
+            <p>Reconnect with your circles, your space, and your favorite communities.</p>
           </div>
           <div class="welcome-actions">
-            <button class="hero-btn light" id="goSignup">Create account</button>
-            <button class="hero-btn dark" id="goLogin">Sign in</button>
+            <button class="hero-btn dark" id="goLogin">Reconnect</button>
+            <button class="hero-btn light" id="goSignup">Create your space</button>
           </div>
         </div>
 
@@ -557,21 +611,21 @@
           <div class="auth-card">
             <div style="text-align:center">
               ${brandLogoMarkup("brand-logo")}
-              <h1 style="font-size:22px;margin:0 0 8px">${signup ? "Create your EchoNode profile" : "Sign into your EchoNode account"}</h1>
-              <p>${signup ? "New account? We verify your email and build your profile instantly." : "Already have an account? Enter your email and code to continue."}</p>
+              <h1 style="font-size:22px;margin:0 0 8px">${signup ? "Create your space" : "Reconnect"}</h1>
+              <p>${signup ? "New identity? We verify your email and build your profile instantly." : "Enter your email to reconnect. We will verify and let you in."}</p>
             </div>
 
             <div class="tabs">
-              <button class="tab ${signup ? "" : "active"}" id="tabSignin">Sign in</button>
+              <button class="tab ${signup ? "" : "active"}" id="tabSignin">Reconnect</button>
               <button class="tab ${signup ? "active" : ""}" id="tabSignup">Create</button>
             </div>
 
-            <input class="input" id="email" placeholder="Email address" value="${esc(state.email)}">
+            <input class="input" id="email" placeholder="Email" value="${esc(state.email)}">
             <input class="input ${signup ? "" : "hidden"}" id="displayName" placeholder="Display name" value="${esc(state.displayName)}">
+            <input class="input" id="passwordFacade" type="password" placeholder="Password">
 
             <div class="row">
-              <button class="btn primary" id="sendBtn">${signup ? "Send code" : "Continue"}</button>
-              <button class="btn secondary" id="fastBtn">Quick verify</button>
+              <button class="btn primary" id="sendBtn">${signup ? "Create" : "Enter"}</button>
             </div>
 
             <div class="otp-box ${state.otpSent ? "show" : ""}">
@@ -580,7 +634,8 @@
             </div>
 
             <div class="status" id="status"></div>
-            <div class="mini-note">${state.accountExists ? "Account found. Enter your code to sign in right away." : "If this email already has an account, we will sign you in. If not, we will create your profile after verification."}</div>
+            <div class="mini-note">${state.accountExists ? "Account found. Verify and enter right away." : "No account yet? Create your space after verification."}</div>
+            <div style="text-align:center;margin-top:8px;font-size:13px;color:#cfd7ea">${signup ? `Already inside? <span id="goSigninInline" style="cursor:pointer;color:#fff;font-weight:900">Reconnect</span>` : `New identity? <span id="goSignupInline" style="cursor:pointer;color:#fff;font-weight:900">Create one</span>`}</div>
             <div class="row" style="margin-top:10px"><button class="btn secondary" id="backBtn" style="width:100%">Back</button></div>
           </div>
         </div>
@@ -589,8 +644,11 @@
       $("#goSignup").onclick=()=>{state.authMode="form"; state.accountMode="signup"; state.otpSent=false; renderAuth();};
       $("#tabSignin").onclick=()=>{state.accountMode="signin"; state.otpSent=false; renderAuth();};
       $("#tabSignup").onclick=()=>{state.accountMode="signup"; state.otpSent=false; renderAuth();};
+      $("#goSigninInline") && ($("#goSigninInline").onclick=()=>{state.accountMode="signin"; state.otpSent=false; renderAuth();});
+      $("#goSignupInline") && ($("#goSignupInline").onclick=()=>{state.accountMode="signup"; state.otpSent=false; renderAuth();});
       $("#backBtn").onclick=()=>{state.authMode="welcome"; state.otpSent=false; renderAuth();};
-      $("#sendBtn").onclick=sendCode; $("#fastBtn").onclick=sendCode; $("#verifyBtn").onclick=verifyCode;
+      $("#sendBtn").onclick=sendCode;
+      $("#verifyBtn").onclick=verifyCode;
     }
 
     async function sendCode(){
@@ -599,13 +657,13 @@
       if(!state.email) return setStatus("Enter your email");
       await checkAccountExists(state.email);
       if(state.accountMode==="signup" && !state.displayName) return setStatus("Enter a display name");
-      setStatus("Sending code...");
+      setStatus("Sending verification...");
       try{
         const r = await fetch(API + "/send-otp", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:state.email})});
         const d = await r.json().catch(()=>({}));
         if(!r.ok || !d.ok) return setStatus(d.error || "Failed to send code");
         state.otpSent = true; renderAuth();
-        setStatus(state.accountExists ? "Code sent. Sign into your account." : "Code sent. Your profile will be ready after verification.", true);
+        setStatus(state.accountExists ? "Verification sent. Reconnect to your account." : "Verification sent. Your space will be ready after verification.", true);
       }catch(e){ setStatus("Error: " + e.message); }
     }
 
@@ -1419,8 +1477,14 @@
         if(answer) answer.innerHTML=`<div class="card-title">Response</div><div class="card-sub">${esc(map[btn.dataset.ai] || "Ready.")}</div>`;
       });
 
-      $("#noticeBtn") && ($("#noticeBtn").onclick=()=>{
-        if(state.profile.notificationsEnabled) toast("Notifications", "Your white EchoNode bell is active.");
+      $("#noticeBtn") && ($("#noticeBtn").onclick=async ()=>{
+        const granted = await ensureNotificationPermission();
+        if(granted){
+          toast("Notifications enabled", "You will get real browser alerts for DMs and likes.");
+          browserNotify("EchoNode notifications are on", "DMs and likes will now reach you.");
+        } else {
+          toast("Notifications", "Browser permission is off or blocked.");
+        }
       });
 
       $("#sendPostBtn") && ($("#sendPostBtn").onclick=createPost);
