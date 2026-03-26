@@ -3,179 +3,305 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EchoNode Luxe Communities</title>
+  <title>EchoNode Founder Edition v3</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#0a0c12; --panel:#141925; --panel2:#1b2130; --panel3:#0e121a;
-      --line:#2a3246; --text:#f6f8ff; --muted:#9aa5bc;
-      --brand:#6b16ff; --brand2:#8b4dff;
-      --ok:#4ade80; --warn:#f59e0b; --busy:#ef4444; --off:#6b7280;
-      --shadow:0 20px 60px rgba(0,0,0,.38);
+      --bg:#090b11; --panel:#121725; --panel2:#171f2e; --panel3:#0d1018;
+      --line:#283248; --text:#f6f8ff; --muted:#97a4bf;
+      --brand:#6b16ff; --brand2:#8b4dff; --shadow:0 20px 60px rgba(0,0,0,.38);
+      --ok:#4ade80; --warn:#f59e0b; --busy:#ef4444; --off:#64748b;
+      --safe-bottom:env(safe-area-inset-bottom);
     }
     html,body{
       margin:0; min-height:100%;
       background:
-        radial-gradient(circle at top left, rgba(107,22,255,.16), transparent 24%),
-        radial-gradient(circle at top right, rgba(0,184,255,.08), transparent 22%),
-        linear-gradient(180deg,#0b0d14,#090b11 60%,#08090f);
+        radial-gradient(circle at top left, rgba(107,22,255,.17), transparent 25%),
+        radial-gradient(circle at top right, rgba(111,66,193,.08), transparent 24%),
+        linear-gradient(180deg,#090b11,#080a10 60%,#07090f);
       color:var(--text);
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
     }
     body{min-height:100vh}
     #app{min-height:100vh}
     .hidden{display:none!important}
+    .fade{animation:fade .22s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    a{color:inherit;text-decoration:none}
 
     .auth{
       min-height:100vh; width:min(460px,100%); margin:0 auto;
       display:flex; flex-direction:column; justify-content:space-between;
-      padding:24px 20px 36px;
+      padding:24px 18px 32px;
     }
-    .welcome-top{padding-top:56px; text-align:center}
-    .logo{
-      width:88px; height:88px; border-radius:28px; margin:0 auto 18px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:34px; font-weight:900; letter-spacing:-2px;
-      background:linear-gradient(135deg,var(--brand),#7b5cff 55%,#a05aff);
-      box-shadow:0 16px 34px rgba(88,101,242,.28);
-    }
-    .auth h1{font-size:36px; line-height:1; letter-spacing:-1.8px; margin:0 0 14px}
-    .auth p{margin:0 auto; max-width:320px; color:#eef1ff; opacity:.93; line-height:1.5}
+    .welcome-top{padding-top:46px; text-align:center}
+    .brand-logo{width:120px;height:120px;margin:0 auto 16px; display:block; filter:drop-shadow(0 16px 30px rgba(107,22,255,.22))}
+    .auth h1{font-size:34px; line-height:1.02; letter-spacing:-1.6px; margin:0 0 12px}
+    .auth p{margin:0 auto; max-width:330px; color:#ebefff; opacity:.94; line-height:1.56}
     .auth-card{
-      background:rgba(17,20,29,.92);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:28px; box-shadow:var(--shadow);
-      padding:16px; backdrop-filter:blur(18px);
+      background:rgba(14,17,26,.95); border:1px solid rgba(255,255,255,.06);
+      border-radius:30px; box-shadow:var(--shadow); padding:16px;
+      backdrop-filter:blur(18px);
     }
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    .tab{
+      height:44px;border:none;border-radius:15px;cursor:pointer;font-weight:900;
+      color:#d7def0;background:#202534;
+    }
+    .tab.active{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
     .input,.select,.textarea{
       width:100%; height:54px; border:none; outline:none; margin:8px 0;
       border-radius:18px; padding:0 16px; background:#0d1018;
       border:1px solid var(--line); color:#fff; font-size:16px;
     }
-    .textarea{height:auto; min-height:96px; padding:14px; resize:vertical; font-family:inherit}
+    .textarea{height:auto; min-height:108px; padding:14px; resize:vertical; font-family:inherit}
     .row{display:flex; gap:10px; flex-wrap:wrap}
     .btn{
       height:54px; border:none; border-radius:18px; cursor:pointer;
       font-size:16px; font-weight:900; padding:0 16px;
     }
-    .btn.primary{flex:1; background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff}
-    .btn.secondary{min-width:120px; background:#232838; color:#e8ecf6}
-    .hero-btn{height:58px; border:none; border-radius:999px; font-size:18px; font-weight:900; cursor:pointer; box-shadow:var(--shadow)}
-    .hero-btn.light{background:#f3f4f7; color:#12131a}
-    .hero-btn.dark{background:#1d256e; color:#fff}
+    .btn.primary{flex:1;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+    .btn.secondary{min-width:120px;background:#242a3a;color:#e8ecf6}
+    .hero-btn{height:58px;border:none;border-radius:999px;font-size:18px;font-weight:900;cursor:pointer;box-shadow:var(--shadow)}
+    .hero-btn.light{background:#f4f6fb;color:#101119}
+    .hero-btn.dark{background:#1f2468;color:#fff}
     .welcome-actions{display:grid; gap:14px}
     .otp-box{display:none}.otp-box.show{display:block}
     .status{min-height:22px; margin-top:10px; font-size:14px; color:#ffbebe; word-break:break-word}
     .status.ok{color:var(--ok)}
+    .mini-note{
+      margin-top:8px;padding:10px 12px;border-radius:14px;background:#121826;border:1px solid rgba(255,255,255,.05);
+      font-size:12px;color:#d4dbef;line-height:1.55
+    }
 
     .topbar{
-      position:sticky; top:0; z-index:30; height:62px; padding:0 16px;
-      display:flex; align-items:center; justify-content:space-between;
-      backdrop-filter:blur(14px); background:rgba(10,12,18,.72);
+      position:sticky; top:0; z-index:30; min-height:64px; padding:10px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      backdrop-filter:blur(14px); background:rgba(9,11,17,.82);
       border-bottom:1px solid rgba(255,255,255,.05);
     }
-    .top-title{font-size:20px; font-weight:1000; letter-spacing:-.6px}
-    .top-sub{font-size:12px; color:var(--muted); margin-top:2px}
-    .tool-btn{
-      height:38px; padding:0 14px; border:none; border-radius:12px; cursor:pointer;
-      background:#202534; color:#eef2ff; font-weight:800;
+    .top-left,.top-right{display:flex;align-items:center;gap:10px}
+    .top-title{font-size:22px;font-weight:1000;letter-spacing:-.7px}
+    .top-sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .icon-btn,.tool-btn{
+      border:none;cursor:pointer;color:#fff;background:#202534;
+      display:inline-flex;align-items:center;justify-content:center;
+      box-shadow:0 8px 20px rgba(0,0,0,.14)
     }
-    .page{display:none; min-height:calc(100vh - 62px - 78px)}
+    .icon-btn{width:40px;height:40px;border-radius:14px}
+    .tool-btn{height:40px;padding:0 14px;border-radius:14px;font-weight:900}
+    .tiny-edit{
+      width:34px;height:34px;border-radius:12px;border:none;background:#202534;color:#fff;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,.14)
+    }
+    .icon-s{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+    .icon-s svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .icon-s.fill svg{fill:#fff;stroke:none}
+
+    .page{display:none; min-height:calc(100vh - 72px - 84px)}
     .page.active{display:block}
-    .page-body{padding:16px 16px 92px}
+    .page-body{padding:16px 16px calc(96px + var(--safe-bottom))}
     .card{
       background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
-      border-radius:22px; padding:14px; box-shadow:var(--shadow);
+      border-radius:24px; padding:14px; box-shadow:var(--shadow);
     }
-    .card-title{font-size:15px; font-weight:1000; margin-bottom:8px}
-    .card-sub{font-size:14px; color:#dbe3f4; line-height:1.55}
-    .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .community-list,.notice-list,.member-list,.post-list{display:grid; gap:10px}
-    .community-item,.notice-item,.member-item,.post-item{
+    .card-title{font-size:15px;font-weight:1000;margin-bottom:8px}
+    .card-sub{font-size:14px;color:#dbe3f4;line-height:1.55}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .section-title{font-size:12px;font-weight:900;color:var(--muted);letter-spacing:.7px;margin:14px 0 10px}
+
+    .search-shell{
+      display:flex;align-items:center;gap:10px;background:#0d1018;border:1px solid var(--line);
+      border-radius:20px;padding:0 14px;height:54px;
+    }
+    .search-shell input{
+      background:transparent;border:none;outline:none;color:#fff;font-size:16px;flex:1
+    }
+    .search-results{display:grid;gap:8px;margin-top:12px}
+    .search-result{
+      background:#101624;border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:12px;cursor:pointer;
+    }
+
+    .community-list,.post-list,.thread-list,.setting-list{display:grid;gap:10px}
+    .community-item,.post-item,.thread-item,.message-bubble,.setting-item{
       background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
-      border-radius:18px; padding:14px;
+      border-radius:20px; padding:14px;
     }
-    .community-row,.member-row,.post-head{display:flex; align-items:center; gap:10px; justify-content:space-between}
-    .community-left,.member-left{display:flex; align-items:center; gap:10px}
-    .hash{font-size:18px; color:#8d97aa}
-    .community-name,.member-name{font-size:15px; font-weight:900}
-    .community-topic,.notice-sub,.member-sub,.post-meta{font-size:12px; color:var(--muted); margin-top:4px}
-    .dot{width:10px; height:10px; border-radius:50%}
+    .community-row,.post-head,.thread-row,.setting-row{display:flex; align-items:center; gap:10px; justify-content:space-between}
+    .community-left,.thread-left,.member-left,.setting-left{display:flex; align-items:center; gap:10px}
+    .hash{font-size:18px;color:#8d97aa}
+    .community-name,.post-name,.thread-name,.setting-name{font-size:15px;font-weight:900}
+    .community-topic,.post-meta,.thread-sub,.muted,.setting-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .dot{width:10px;height:10px;border-radius:50%}
     .dot.online{background:var(--ok)} .dot.afk{background:var(--warn)} .dot.busy{background:var(--busy)} .dot.offline{background:var(--off)}
-    .post-text{margin-top:10px; font-size:15px; line-height:1.55; color:#eef2ff; white-space:pre-wrap; word-break:break-word}
+
+    .post-item{padding:16px}
+    .post-text{margin-top:10px;font-size:15px;line-height:1.6;color:#eef2ff;white-space:pre-wrap;word-break:break-word}
+    .post-actions{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+    .pill-action{
+      border:none;background:#111624;color:#dfe7fb;height:40px;padding:0 14px;border-radius:999px;
+      cursor:pointer;font-weight:900;display:inline-flex;align-items:center;gap:8px
+    }
+    .pill-action.active{background:rgba(107,22,255,.18);color:#dbcfff}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:999px;
+      background:#121826;border:1px solid rgba(255,255,255,.05);color:#dbe3f4;font-size:12px;font-weight:900
+    }
+
     .composer{margin-top:12px}
     .compose-wrap{
-      background:#0c1018; border:1px solid #212739; border-radius:20px;
-      padding:10px; display:flex; gap:10px; align-items:flex-end;
+      background:#0c1018;border:1px solid #212739;border-radius:22px;padding:10px;
+      display:flex;gap:10px;align-items:flex-end;
     }
     .compose{
-      flex:1; min-height:24px; max-height:140px; resize:none; border:none; outline:none;
+      flex:1; min-height:26px; max-height:140px; resize:none; border:none; outline:none;
       background:transparent; color:#fff; font-size:16px; font-family:inherit; line-height:1.45; padding:8px;
     }
     .send{
-      min-width:86px; height:44px; border:none; border-radius:14px; cursor:pointer;
-      background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; font-weight:900;
+      min-width:86px;height:44px;border:none;border-radius:14px;cursor:pointer;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:900;
     }
-    .avatar-mini,.avatar-big,.post-avatar{
+
+    .avatar-mini,.avatar-big,.post-avatar,.friend-avatar{
       background:linear-gradient(135deg,var(--brand),#8a49ff);
-      display:flex; align-items:center; justify-content:center; font-weight:900; overflow:hidden;
+      display:flex;align-items:center;justify-content:center;font-weight:900;overflow:hidden;
     }
-    .avatar-mini{width:40px; height:40px; border-radius:14px}
-    .avatar-big{width:96px; height:96px; border-radius:28px; border:4px solid #141821; font-size:34px}
-    .post-avatar{width:42px; height:42px; border-radius:14px; flex:0 0 auto}
-    .avatar-mini img,.avatar-big img,.post-avatar img{width:100%; height:100%; object-fit:cover}
+    .avatar-big{width:96px;height:96px;border-radius:28px;border:4px solid #141821;font-size:34px}
+    .post-avatar,.friend-avatar{width:44px;height:44px;border-radius:14px;flex:0 0 auto}
+    .friend-avatar{width:58px;height:58px;border-radius:50%}
+    .avatar-big img,.post-avatar img,.friend-avatar img{width:100%;height:100%;object-fit:cover}
 
     .profile-hero{
       background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.05); border-radius:26px; overflow:hidden; box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.05); border-radius:28px; overflow:hidden; box-shadow:var(--shadow);
     }
-    .cover{height:180px; background:linear-gradient(135deg,#1a1f2f,#0b0d14) center/cover no-repeat}
-    .profile-body{padding:0 18px 18px; position:relative}
-    .name-line{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px}
-    .name{font-size:28px; font-weight:1000; letter-spacing:-1px}
-    .badge{padding:7px 11px; border-radius:12px; background:#1e2432; font-size:12px; font-weight:900}
-    .meta{margin-top:8px; color:var(--muted); line-height:1.5}
-    .music-embed{width:100%; height:110px; border:none; border-radius:14px; background:#0d1018}
+    .cover{
+      height:170px;background:linear-gradient(135deg,#1a1f2f,#0b0d14) center/cover no-repeat;
+      position:relative;
+    }
+    .cover::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:80px;
+      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(9,11,17,.88));
+    }
+    .profile-body{padding:0 18px 18px; position:relative; margin-top:-54px}
+    .name-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .name{font-size:28px;font-weight:1000;letter-spacing:-1px}
+    .badge{padding:7px 11px;border-radius:12px;background:#1e2432;font-size:12px;font-weight:900}
+    .meta{margin-top:8px;color:var(--muted);line-height:1.5}
+    .music-embed{width:100%;height:110px;border:none;border-radius:14px;background:#0d1018}
     .xp-box{
-      margin-top:12px; padding:12px 14px; border-radius:18px;
-      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
-      font-size:14px; font-weight:900;
+      margin-top:12px; padding:12px 14px; border-radius:18px; background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.05); font-size:14px; font-weight:900;
     }
+    .progress{margin-top:10px;width:100%;height:10px;border-radius:999px;background:#0d1018;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(135deg,var(--brand),var(--brand2));border-radius:999px}
+
+    .showcase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .showcase-item{
+      aspect-ratio:4/5;border-radius:20px;background:#0d111a;border:1px dashed rgba(255,255,255,.10);
+      overflow:hidden;display:flex;align-items:center;justify-content:center;color:#9eabc6;font-size:12px;font-weight:900
+    }
+    .showcase-item img{width:100%;height:100%;object-fit:cover}
+    @media (min-width: 900px){ .showcase-item{aspect-ratio:5/4} }
+
+    .friends-strip{display:flex;align-items:center;gap:10px;overflow:auto;padding-bottom:2px;margin-top:10px}
+    .friend-stack{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:62px;cursor:pointer}
+    .friend-name{font-size:11px;color:#cfd7ea;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
+
+    .dm-layout{display:grid;grid-template-columns:1fr;gap:12px}
+    .dm-window{
+      background:#0d1018;border:1px solid rgba(255,255,255,.05);border-radius:22px;padding:12px;min-height:360px;
+      display:flex;flex-direction:column;
+    }
+    .dm-messages{display:grid;gap:10px;flex:1;overflow:auto;padding-right:2px}
+    .message-bubble.self{background:linear-gradient(135deg,rgba(107,22,255,.22),rgba(139,77,255,.18));border-color:rgba(107,22,255,.32)}
+    .message-bubble{
+      border-radius:24px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.05);
+      box-shadow:0 10px 24px rgba(0,0,0,.14);
+      animation:msgIn .18s ease;
+    }
+    @keyframes msgIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+    .message-bubble .t{font-size:14px;line-height:1.55}
+    .message-bubble .m{font-size:11px;color:var(--muted);margin-top:6px}
+    .dm-compose{display:flex;gap:10px;margin-top:12px;align-items:center}
+    .chat-bar{
+      flex:1;display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+      border-radius:22px;padding:8px 10px;
+    }
+    .emoji-btn,.send-icon-btn,.more-menu-btn{
+      width:42px;height:42px;border:none;border-radius:16px;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:#202534;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.14)
+    }
+    .send-icon-btn{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+    .unread-badge{
+      min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+      font-size:11px;font-weight:900; margin-left:8px;
+    }
+    .member-menu{
+      position:absolute; right:16px; top:58px; z-index:35;
+      background:#111625; border:1px solid rgba(255,255,255,.06); border-radius:18px;
+      padding:8px; display:grid; gap:6px; min-width:170px; box-shadow:var(--shadow);
+    }
+    .member-menu button{
+      border:none; background:#1a2030; color:#fff; border-radius:14px; height:40px;
+      cursor:pointer; font-weight:800; text-align:left; padding:0 12px;
+    }
+
+    .sidebar{
+      position:fixed; top:0; left:0; bottom:0; z-index:60;
+      width:min(336px,calc(100% - 56px));
+      background:rgba(8,10,16,.98); border-right:1px solid rgba(255,255,255,.05);
+      transform:translateX(-100%); transition:.22s ease; padding:16px; overflow:auto;
+    }
+    .sidebar.open{transform:translateX(0)}
+    .sidebar-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .sidebar-backdrop{position:fixed; inset:0; z-index:55; background:rgba(0,0,0,.42); display:none}
+    .sidebar-backdrop.show{display:block}
 
     .bottom-nav{
       position:fixed; left:50%; transform:translateX(-50%); bottom:8px; z-index:40;
-      width:min(420px,calc(100% - 16px)); background:rgba(9,11,16,.84);
+      width:min(430px,calc(100% - 16px)); background:rgba(8,10,16,.86);
       backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,.05);
-      border-radius:20px; box-shadow:var(--shadow);
-      padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+      border-radius:22px; box-shadow:var(--shadow);
+      padding:6px 6px calc(6px + var(--safe-bottom));
     }
-    .nav-row{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+    .nav-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
     .nav-btn{
-      background:transparent; border:none; color:#838da1; padding:9px 4px; border-radius:14px;
-      display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; font-weight:900; cursor:pointer;
+      background:transparent;border:none;color:#838da1;padding:10px 4px;border-radius:16px;
+      display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:900;cursor:pointer;
     }
-    .nav-btn.active{background:rgba(107,22,255,.12); color:#cdb8ff}
-    .nav-icon{font-size:18px; line-height:1}
+    .nav-btn.active{background:rgba(107,22,255,.12);color:#fff}
+    .nav-btn.active svg{stroke:#fff}
+    .nav-icon{font-size:18px;line-height:1}
 
-    .modal{
+    .modal,.drawer{
       position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.52);
       display:none; align-items:flex-end; justify-content:center; padding:12px;
     }
-    .modal.open{display:flex}
+    .modal.open,.drawer.open{display:flex}
     .sheet{
-      width:min(430px,100%); max-height:90vh; overflow:auto; background:#0f121a;
-      border:1px solid rgba(255,255,255,.06); border-radius:24px 24px 18px 18px;
-      padding:14px; box-shadow:var(--shadow);
+      width:min(460px,100%); max-height:90vh; overflow:auto; background:#0f121a;
+      border:1px solid rgba(255,255,255,.06); border-radius:24px 24px 18px 18px; padding:14px; box-shadow:var(--shadow);
     }
-    .sheet-handle{width:44px; height:5px; border-radius:999px; background:#31384d; margin:4px auto 12px}
-    .sheet-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
-    .sheet-title{font-size:20px; font-weight:1000; letter-spacing:-.6px}
-    .file-row{display:flex; gap:8px; flex-wrap:wrap}
+    .sheet-handle{width:44px;height:5px;border-radius:999px;background:#31384d;margin:4px auto 12px}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .sheet-title{font-size:20px;font-weight:1000;letter-spacing:-.6px}
+    .file-row{display:flex;gap:8px;flex-wrap:wrap}
     .file-btn{
       display:inline-flex; align-items:center; justify-content:center;
       height:44px; padding:0 14px; border-radius:14px; background:#232838; color:#e8ecf6; font-weight:800; cursor:pointer;
     }
     .file-btn input{display:none}
+    .switch{width:48px;height:28px;border-radius:999px;background:#2a3347;position:relative;cursor:pointer;border:none}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+    .switch.on{background:#6b16ff}
+    .switch.on::after{left:24px}
 
     .toast-wrap{
       position:fixed; top:14px; left:50%; transform:translateX(-50%);
@@ -185,12 +311,16 @@
       display:flex; gap:10px; align-items:flex-start; padding:11px 12px; border-radius:16px;
       background:rgba(12,16,22,.95); border:1px solid rgba(255,255,255,.06); box-shadow:var(--shadow);
     }
-    .toast .t-title{font-size:12px; font-weight:900}
-    .toast .t-msg{font-size:11px; color:#c5cad5; margin-top:2px}
+    .toast .t-title{font-size:12px;font-weight:900}
+    .toast .t-msg{font-size:11px;color:#c5cad5;margin-top:2px}
 
-    @media (max-width:640px){
-      .grid{grid-template-columns:1fr}
+    .ai-fab{
+      position:fixed; right:16px; bottom:98px; z-index:50;
+      width:56px;height:56px;border:none;border-radius:18px;cursor:pointer;
+      background:linear-gradient(135deg,#7b35ff,#9f6dff);color:#fff;font-size:24px;box-shadow:var(--shadow)
     }
+
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} }
   </style>
 </head>
 <body>
@@ -203,85 +333,109 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBH2qRm9fx2tJqlBgYJ1Zc7e4FJ8DEQVjs",
+      apiKey: "AIzaSyAyiOoVQ2n8scNNf5SjnfBVtrJbt5wiVko",
       authDomain: "supa-dojo.firebaseapp.com",
       databaseURL: "https://supa-dojo-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "supa-dojo",
       storageBucket: "supa-dojo.firebasestorage.app",
       messagingSenderId: "1037833695190",
-      appId: "1:1037833695190:web:ba1050f98a9e16a422be77"
+      appId: "1:1037833695190:web:02b349414c61f13322be77"
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const API = "https://echonode-api.onrender.com/auth";
+    const FOUNDER_EMAIL = "aaoouua00@gmail.com";
+
+    const countryOptions = [
+      { code:"SA", flag:"🇸🇦", name:"Saudi Arabia" },
+      { code:"US", flag:"🇺🇸", name:"United States" },
+      { code:"GB", flag:"🇬🇧", name:"United Kingdom" },
+      { code:"JP", flag:"🇯🇵", name:"Japan" },
+      { code:"KR", flag:"🇰🇷", name:"South Korea" },
+      { code:"DE", flag:"🇩🇪", name:"Germany" },
+      { code:"FR", flag:"🇫🇷", name:"France" },
+      { code:"BR", flag:"🇧🇷", name:"Brazil" },
+      { code:"TR", flag:"🇹🇷", name:"Turkey" },
+      { code:"AE", flag:"🇦🇪", name:"UAE" },
+      { code:"EG", flag:"🇪🇬", name:"Egypt" }
+    ];
+
+    function icon(name){
+      const icons = {
+        menu:`<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>`,
+        bell:`<svg viewBox="0 0 24 24"><path d="M15 17H5.8a1 1 0 0 1-.8-1.6L7 12.8V10a5 5 0 0 1 10 0v2.8l2 2.6a1 1 0 0 1-.8 1.6H15m0 0a3 3 0 0 1-6 0"/></svg>`,
+        settings:`<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>`,
+        home:`<svg viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.8V20h14V9.8"/></svg>`,
+        base:`<svg viewBox="0 0 24 24"><path d="M8 8h8v8H8z"/><path d="M3 8h3M18 8h3M3 16h3M18 16h3M8 3v3M16 3v3M8 18v3M16 18v3"/></svg>`,
+        profile:`<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>`,
+        search:`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>`,
+        plus:`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
+        ai:`<svg viewBox="0 0 24 24"><path d="M12 3 14 9l6 2-6 2-2 6-2-6-6-2 6-2 2-6Z"/></svg>`,
+        close:`<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6l-12 12"/></svg>`,
+        arrow:`<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`,
+        edit:`<svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m12 6 4 4"/></svg>`,
+        block:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M7 17 17 7"/></svg>`,
+        lock:`<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>`,
+        more:`<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg>`,
+        send:`<svg viewBox="0 0 24 24"><path d="M21 3 3 11l7 2 2 7 9-17Z"/></svg>`,
+        smile:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14c1 1.2 2.2 2 3.5 2s2.5-.8 3.5-2"/></svg>`,
+        flag:`<svg viewBox="0 0 24 24"><path d="M5 21V5"/><path d="M5 5c6-2 8 2 14 0v8c-6 2-8-2-14 0"/></svg>`
+      };
+      return `<span class="icon-s">${icons[name] || ''}</span>`;
+    }
 
     const defaultCommunities = {
+      all:{name:"home", topic:"Top posts and strongest community drops"},
       general:{name:"general", topic:"Main space for everyone"},
       gaming:{name:"gaming", topic:"Games, squads, clips, and wins"},
-      setup:{name:"setup", topic:"Gear, desks, and battlestations"}
+      setup:{name:"setup", topic:"Gear, desks, and battlestations"},
+      anime:{name:"anime", topic:"Fandoms, art, and reactions"},
+      code:{name:"code", topic:"Coding, UI, and builds"}
+    };
+
+    const defaultPrivacy = { showBirthday:false, showCountry:true, notificationsEnabled:true };
+    const defaultProfile = {
+      displayName:"", email:"", mood:"Late night cat-energy online", level:1, xp:0,
+      mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
+      musicUrl:"", presence:"online", gender:"", friendsVisibility:"public", showcase1:"", showcase2:"", showcase3:"",
+      founder:false, countryCode:"SA", countryFlag:"🇸🇦", countryName:"Saudi Arabia",
+      birthday:"", blockedUsers:{}, securityKey:"", ...defaultPrivacy
     };
 
     const state = {
-      authMode:"welcome",
-      otpSent:false,
-      email:"",
-      displayName:"",
-      user:null,
-      currentCommunity:"general",
-      currentPage:"communities",
-      communities:defaultCommunities,
-      posts:{},
-      notices:["Welcome to EchoNode","Communities are live","Profile tools are ready"],
-      statusMap:{},
-      unsubs:[],
-      presenceRef:null,
-      lastPostAt:0,
-      rewardsOpen:false,
-      profile:{
-        displayName:"",
-        mood:"Late night chat energy",
-        level:1,
-        xp:0,
-        coins:40,
-        inventory:{},
-        rewards:{},
-        showcase:"Share your clips, thoughts, and community moments.",
-        avatar:"",
-        cover:"",
-        musicUrl:"",
-        presence:"online"
-      }
+      authMode:"welcome", accountMode:"signin", otpSent:false, accountExists:false,
+      email:"", displayName:"", user:null, currentCommunity:"all", currentPage:"home",
+      draftPostImage:"", draftPostLink:"",
+      communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
+      selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
+      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
+      notifiedLikes:{}, notifiedMessages:{},
+      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false,
+      profile:{ ...defaultProfile }
     };
-
-    const savedEchoEmail = localStorage.getItem("echonode_saved_email");
-    if(savedEchoEmail) state.email = savedEchoEmail;
 
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
+    const esc = s => { const d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; };
+    const emailKey = v => String(v || "").trim().toLowerCase().replace(/[.#$/[\]]/g, "_");
+    const initials = name => (name || "EN").trim().slice(0,2).toUpperCase();
+    const countryByCode = code => countryOptions.find(c => c.code === code) || countryOptions[0];
 
-    function esc(s){
-      const d = document.createElement("div");
-      d.textContent = s == null ? "" : s;
-      return d.innerHTML;
-    }
-
-    function initials(name){ return (name || "En").trim().slice(0,2); }
-
-    function normalizeSongUrl(url){ return String(url || "").trim(); }
-
-    function isDirectAudio(url){ return /\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(url || ""); }
-
-    function spotifyEmbed(url){
-      url = normalizeSongUrl(url);
-      const kinds = ["track","episode","album","playlist"];
-      for(let i=0;i<kinds.length;i++){
-        const k = kinds[i];
-        const m = url.match(new RegExp("spotify\\.com\\/" + k + "\\/([A-Za-z0-9]+)", "i"));
-        if(m) return "https://open.spotify.com/embed/" + k + "/" + m[1];
-      }
-      return "";
+    function brandLogoMarkup(cls="brand-logo"){
+      return `
+        <svg class="${cls}" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="160" height="160" rx="44" fill="url(#g)"/>
+          <path d="M28 112c0-16 10-28 28-30 7-18 25-28 52-28 26 0 45 10 52 28 18 2 28 14 28 30v10H28v-10Z" fill="#F4F4F7"/>
+          <path d="M38 88c-10-12-16-23-16-41 18 8 28 14 39 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <path d="M122 88c10-12 16-23 16-41-18 8-28 14-39 21" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="66" cy="97" r="5" fill="#0D0D12"/>
+          <circle cx="94" cy="97" r="5" fill="#0D0D12"/>
+          <path d="M74 111c4 3 8 4 12 0" stroke="#0D0D12" stroke-width="3" stroke-linecap="round"/>
+          <defs><linearGradient id="g" x1="20" y1="20" x2="140" y2="140"><stop stop-color="#6B16FF"/><stop offset="1" stop-color="#8B4DFF"/></linearGradient></defs>
+        </svg>
+      `;
     }
 
     function fileToDataUrl(file){
@@ -293,435 +447,622 @@
       });
     }
 
-    function timeLabel(ts){
-      if(!ts) return "";
-      const d = new Date(ts);
-      return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    function normalizeSongUrl(url){ return String(url || "").trim(); }
+    function isDirectAudio(url){ return /\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(url || ""); }
+    function spotifyEmbed(url){
+      url = normalizeSongUrl(url);
+      const kinds = ["track","episode","album","playlist"];
+      for(const k of kinds){
+        const m = url.match(new RegExp("spotify\\.com\\/" + k + "\\/([A-Za-z0-9]+)", "i"));
+        if(m) return "https://open.spotify.com/embed/" + k + "/" + m[1];
+      }
+      return "";
     }
 
-    function presenceClass(v){
-      return ["online","afk","busy","offline"].includes(v) ? v : "offline";
+    function youtubeEmbed(url){
+      url = String(url || "").trim();
+      const a = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+      return a ? `https://www.youtube.com/embed/${a[1]}` : "";
+    }
+    function resetDraftMedia(){
+      state.draftPostImage = "";
+      state.draftPostLink = "";
     }
 
-    function getLevel(xp){
-      if(xp < 100) return 1;
-      if(xp < 300) return 2;
-      if(xp < 600) return 3;
-      if(xp < 1000) return 4;
-      return 5;
+    function browserNotify(title, body){
+      if(!state.profile.notificationsEnabled) return;
+      if(typeof Notification === "undefined") return;
+      if(Notification.permission === "granted"){
+        try{ new Notification(title, { body }); }catch(e){}
+      }
     }
 
-    async function addXP(amount){
-      const uid = auth.currentUser && auth.currentUser.uid;
-      if(!uid) return;
-      const ref = db.ref("users/" + uid);
-      const snap = await ref.get();
-      const data = snap.val() || {};
-      const xp = (data.xp || 0) + amount;
-      const level = getLevel(xp);
-      await ref.update({ xp:xp, level:level });
-      state.profile.xp = xp;
-      state.profile.level = level;
-      renderMain();
+    async function ensureNotificationPermission(){
+      if(typeof Notification === "undefined") return false;
+      if(Notification.permission === "granted") return true;
+      if(Notification.permission === "denied") return false;
+      try{
+        const result = await Notification.requestPermission();
+        return result === "granted";
+      }catch(e){
+        return false;
+      }
     }
 
-    function setStatus(msg, ok){
-      const el = $("#status");
-      if(!el) return;
-      el.textContent = msg || "";
-      el.classList.toggle("ok", !!ok);
-    }
-
-    function showToast(title,msg){
-      const wrap = $("#toasts");
-      const el = document.createElement("div");
-      el.className = "toast";
-      el.innerHTML = `<div>✨</div><div><div class="t-title">${esc(title)}</div><div class="t-msg">${esc(msg)}</div></div>`;
-      wrap.prepend(el);
-      setTimeout(()=>el.remove(), 2200);
-    }
-
-    function clearUnsubs(){
-      state.unsubs.forEach(fn=>{ try{ fn(); }catch(e){} });
-      state.unsubs = [];
-    }
+    function timeLabel(ts){ if(!ts) return ""; const d=new Date(ts); return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}); }
+    function dateLabel(ts){ if(!ts) return ""; const d=new Date(ts); return d.toLocaleDateString([], {month:"short", day:"numeric"}); }
+    function presenceClass(v){ return ["online","afk","busy","offline"].includes(v) ? v : "offline"; }
+    function getLevel(xp){ if(xp<100) return 1; if(xp<300) return 2; if(xp<600) return 3; if(xp<1000) return 4; return 5; }
+    function nextLevelXP(level){ if(level<=1)return 100; if(level===2)return 300; if(level===3)return 600; if(level===4)return 1000; return level*300; }
+    function currentLevelBase(level){ if(level<=1)return 0; if(level===2)return 100; if(level===3)return 300; if(level===4)return 600; return 1000+((level-5)*300); }
+    function progressPercent(xp, level){ const base=currentLevelBase(level), next=nextLevelXP(level), span=Math.max(1,next-base); return Math.max(0, Math.min(100, ((xp-base)/span)*100)); }
+    function toast(title,msg){ const wrap=$("#toasts"); const el=document.createElement("div"); el.className="toast"; el.innerHTML=`<div>✨</div><div><div class="t-title">${esc(title)}</div><div class="t-msg">${esc(msg)}</div></div>`; wrap.prepend(el); setTimeout(()=>el.remove(),2200); }
+    function setStatus(msg, ok){ const el=$("#status"); if(!el) return; el.textContent=msg||""; el.classList.toggle("ok", !!ok); }
+    function clearUnsubs(){ state.unsubs.forEach(fn=>{try{fn();}catch(e){}}); state.unsubs=[]; }
 
     async function ensureCommunitiesExist(){
-      const snap = await db.ref("communities").get();
-      if(!snap.exists()) await db.ref("communities").set(defaultCommunities);
+      const ref = db.ref("communities");
+      const snap = await ref.get();
+      if(!snap.exists()){
+        const toSave = Object.fromEntries(Object.entries(defaultCommunities).filter(([k])=>k!=="all"));
+        await ref.set(toSave);
+      }
     }
-
     async function loadCommunities(){
       await ensureCommunitiesExist();
       const snap = await db.ref("communities").get();
-      state.communities = snap.val() || defaultCommunities;
+      state.communities = { all: defaultCommunities.all, ...(snap.val() || {}) };
+    }
+    async function checkAccountExists(email){
+      const key = emailKey(email);
+      const snap = await db.ref("emails/" + key).get();
+      state.accountExists = snap.exists();
+      return state.accountExists;
     }
 
     async function loadProfile(uid){
-      const profileRef = db.ref("profiles/" + uid);
-      const userRef = db.ref("users/" + uid);
-
-      const pSnap = await profileRef.get();
+      const profileRef=db.ref("profiles/" + uid), userRef=db.ref("users/" + uid);
+      const pSnap=await profileRef.get();
       if(!pSnap.exists()){
         const profile = {
+          ...defaultProfile,
           displayName: state.displayName || state.email.split("@")[0],
           email: state.email,
-          mood: state.profile.mood,
-          showcase: state.profile.showcase,
-          avatar: "",
-          cover: "",
-          musicUrl: "",
-          presence: "online",
-          coins: 40,
-          inventory: {},
-          rewards: {}
+          emailKey: emailKey(state.email),
+          founder: state.email.toLowerCase()===FOUNDER_EMAIL.toLowerCase()
         };
         await profileRef.set(profile);
-        state.profile = { ...state.profile, ...profile };
-      }else{
-        state.profile = { ...state.profile, ...pSnap.val() };
+        await db.ref("emails/" + profile.emailKey).set(uid);
+        state.profile = { ...defaultProfile, ...profile };
+      } else {
+        state.profile = { ...defaultProfile, ...pSnap.val() };
       }
-
-      const uSnap = await userRef.get();
-      const uVal = uSnap.val() || {};
-      if(!uSnap.exists()){
-        await userRef.set({ xp:0, level:1 });
-      }
-      state.profile.xp = uVal.xp || 0;
-      state.profile.level = uVal.level || 1;
-      state.profile.coins = Number(state.profile.coins || 0);
-      state.profile.inventory = state.profile.inventory || {};
-      state.profile.rewards = state.profile.rewards || {};
-      if(state.profile.email) localStorage.setItem("echonode_saved_email", state.profile.email);
+      const uSnap=await userRef.get(); const uVal=uSnap.val()||{};
+      if(!uSnap.exists()) await userRef.set({xp:0, level:1});
+      state.profile.xp = uVal.xp || 0; state.profile.level = uVal.level || 1;
+      state.profile.email = state.profile.email || state.email;
+      state.profile.founder = String(state.profile.email || "").toLowerCase()===FOUNDER_EMAIL.toLowerCase() || !!state.profile.founder;
+      const cc = countryByCode(state.profile.countryCode || "SA");
+      state.profile.countryCode = cc.code; state.profile.countryFlag = cc.flag; state.profile.countryName = cc.name;
+      state.founder = !!state.profile.founder;
     }
 
-
-    async function addCoins(amount){
-      if(!state.user) return;
-      const next = Math.max(0, Number(state.profile.coins || 0) + Number(amount || 0));
-      state.profile.coins = next;
-      await db.ref("profiles/" + state.user.uid + "/coins").set(next);
-      return next;
+    async function addXP(amount){
+      const uid=auth.currentUser && auth.currentUser.uid; if(!uid) return;
+      const ref=db.ref("users/" + uid), snap=await ref.get(), data=snap.val()||{};
+      const xp=(data.xp||0)+amount, level=getLevel(xp);
+      await ref.update({xp,level}); state.profile.xp=xp; state.profile.level=level;
     }
 
-    function canClaimReward(key){
-      const cfg = REWARD_TIERS[key];
-      const last = Number((state.profile.rewards || {})[key] || 0);
-      return !last || (Date.now() - last >= cfg.cooldown);
-    }
-
-    function rewardTimeLeft(key){
-      const cfg = REWARD_TIERS[key];
-      const last = Number((state.profile.rewards || {})[key] || 0);
-      if(!last) return "Ready now";
-      const left = cfg.cooldown - (Date.now() - last);
-      if(left <= 0) return "Ready now";
-      const hours = Math.floor(left / 3600000);
-      const days = Math.floor(left / 86400000);
-      if(days >= 1) return `${days}d left`;
-      return `${Math.max(1,hours)}h left`;
-    }
-
-    async function claimReward(key){
-      if(!state.user || !REWARD_TIERS[key]) return;
-      if(!canClaimReward(key)) return showToast("Locked", rewardTimeLeft(key));
-      const cfg = REWARD_TIERS[key];
-      const rewards = { ...(state.profile.rewards || {}) };
-      rewards[key] = Date.now();
-      state.profile.rewards = rewards;
-      await db.ref("profiles/" + state.user.uid + "/rewards").set(rewards);
-      await addCoins(cfg.coins);
-      await addXP(cfg.xp);
-      renderMain();
-      showToast(cfg.title, `+${cfg.coins} paws • +${cfg.xp} XP`);
-    }
-
-    async function buyStoreItem(itemId){
-      if(!state.user) return;
-      const item = STORE_ITEMS.find(x=>x.id===itemId);
-      if(!item) return;
-      const inventory = state.profile.inventory || {};
-      if(inventory[itemId]) return showToast("Owned", "This item is already yours");
-      if(Number(state.profile.coins || 0) < item.price) return showToast("Not enough paws", "Earn more rewards first");
-      await addCoins(-item.price);
-      const nextInventory = { ...inventory, [itemId]: true };
-      state.profile.inventory = nextInventory;
-      await db.ref("profiles/" + state.user.uid + "/inventory").set(nextInventory);
-      renderMain();
-      showToast("Purchased", `${item.title} unlocked`);
-    }
-    function subscribeToCommunity(communityId){
-      const ref = db.ref("posts/" + communityId).limitToLast(50);
-      const cb = snap => {
-        const val = snap.val() || {};
-        state.posts[communityId] = Object.entries(val).map(([id,v]) => ({ id, ...v }));
-        if(state.currentPage === "communities" && state.currentCommunity === communityId) renderMain();
+    function subscribePostsForCommunity(communityId){
+      const ref=db.ref("posts/" + communityId).limitToLast(100);
+      const cb=snap=>{
+        const val=snap.val()||{};
+        const entries = Object.entries(val).map(([id,v])=>({id,communityId,...v}));
+        entries.forEach(post=>{
+          if(!state.user || post.uid !== state.user.uid) return;
+          const prevLikes = state.notifiedLikes[post.id];
+          const nextLikes = Number(post.likes || 0);
+          if(prevLikes != null && nextLikes > prevLikes){
+            const diff = nextLikes - prevLikes;
+            toast("New likes", `${diff} new like${diff > 1 ? "s" : ""} on your post.`);
+            browserNotify("New likes on your post", `${diff} new like${diff > 1 ? "s" : ""} on your post.`);
+          }
+          state.notifiedLikes[post.id] = nextLikes;
+        });
+        state.posts[communityId]=entries;
+        if(state.user) renderMain();
       };
-      ref.on("value", cb);
-      state.unsubs.push(()=>ref.off("value", cb));
+      ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
     }
-
+    function subscribeProfiles(){
+      const ref=db.ref("profiles");
+      const cb=snap=>{ state.profiles=snap.val()||{}; if(state.user) renderMain(); };
+      ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
+    }
     function subscribeStatus(){
-      const ref = db.ref("status");
-      const cb = snap => {
-        state.statusMap = snap.val() || {};
+      const ref=db.ref("status");
+      const cb=snap=>{ state.statusMap=snap.val()||{}; if(state.user) renderMain(); };
+      ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
+    }
+    function subscribeDMsForUser(uid){
+      const ref=db.ref("dms");
+      const cb=snap=>{
+        const all=snap.val()||{}; state.threads={};
+        Object.entries(all).forEach(([threadId,val])=>{
+          if(threadId.includes(uid)){
+            state.threads[threadId]=val;
+            const msgs = Object.values((val && val.messages) || {});
+            const incoming = msgs.filter(m => m && m.to === uid && m.from !== uid).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+            const latestIncoming = incoming[incoming.length - 1];
+            if(latestIncoming){
+              const prevSeen = state.notifiedMessages[threadId];
+              const nextSeen = Number(latestIncoming.createdAt || 0);
+              if(prevSeen != null && nextSeen > prevSeen){
+                const senderName = latestIncoming.name || "New message";
+                toast(senderName, latestIncoming.text || "Sent you a message");
+                browserNotify(senderName, latestIncoming.text || "Sent you a message");
+              }
+              state.notifiedMessages[threadId] = nextSeen;
+              const lastRead = Number(state.lastReadThreads[threadId] || 0);
+              state.unreadCounts[threadId] = incoming.filter(m => Number(m.createdAt || 0) > lastRead).length;
+            } else {
+              state.unreadCounts[threadId] = 0;
+            }
+          }
+        });
         if(state.user) renderMain();
       };
-      ref.on("value", cb);
-      state.unsubs.push(()=>ref.off("value", cb));
+      ref.on("value",cb); state.unsubs.push(()=>ref.off("value",cb));
     }
-
-    function subscribeUserStats(){
-      const uid = auth.currentUser && auth.currentUser.uid;
-      if(!uid) return;
-      const ref = db.ref("users/" + uid);
-      const cb = snap => {
-        const d = snap.val() || {};
-        state.profile.xp = d.xp || 0;
-        state.profile.level = d.level || 1;
-        if(state.user) renderMain();
-      };
-      ref.on("value", cb);
-      state.unsubs.push(()=>ref.off("value", cb));
-    }
-
     async function subscribeAll(){
-      clearUnsubs();
-      await loadCommunities();
-      Object.keys(state.communities).forEach(subscribeToCommunity);
-      subscribeStatus();
-      subscribeUserStats();
+      clearUnsubs(); await loadCommunities();
+      Object.keys(state.communities).filter(k=>k!=="all").forEach(subscribePostsForCommunity);
+      subscribeProfiles(); subscribeStatus(); subscribeDMsForUser(state.user.uid);
     }
-
     async function setPresence(mode){
-      if(!state.user) return;
-      state.profile.presence = mode;
+      if(!state.user) return; state.profile.presence=mode;
       await db.ref("profiles/" + state.user.uid + "/presence").set(mode);
       await db.ref("status/" + state.user.uid).set({
-        state: mode,
-        last_changed: Date.now(),
+        state:mode, last_changed:Date.now(),
         name: state.profile.displayName || state.email.split("@")[0] || "User"
       });
     }
-
     function bindPresence(){
       if(!state.user) return;
-      const ref = db.ref("status/" + state.user.uid);
-      state.presenceRef = ref;
-      ref.onDisconnect().set({
-        state:"offline",
-        last_changed:Date.now(),
-        name: state.profile.displayName || state.email.split("@")[0] || "User"
-      });
-      ref.set({
-        state: state.profile.presence || "online",
-        last_changed: Date.now(),
-        name: state.profile.displayName || state.email.split("@")[0] || "User"
-      });
+      const ref=db.ref("status/" + state.user.uid); state.presenceRef=ref;
+      ref.onDisconnect().set({state:"offline", last_changed:Date.now(), name: state.profile.displayName || state.email.split("@")[0] || "User"});
+      ref.set({state:state.profile.presence||"online", last_changed:Date.now(), name: state.profile.displayName || state.email.split("@")[0] || "User"});
+    }
+
+    function renderAuth(){
+      const signup = state.accountMode === "signup";
+      $("#app").innerHTML = `
+        <div class="auth fade ${state.authMode!=="welcome"?"hidden":""}">
+          <div class="welcome-top">
+            ${brandLogoMarkup()}
+            <h1>Welcome back</h1>
+            <p>Reconnect with your circles, your space, and your favorite communities.</p>
+          </div>
+          <div class="welcome-actions">
+            <button class="hero-btn dark" id="goLogin">Reconnect</button>
+            <button class="hero-btn light" id="goSignup">Create your space</button>
+          </div>
+        </div>
+
+        <div class="auth fade ${state.authMode==="welcome"?"hidden":""}">
+          <div class="auth-card">
+            <div style="text-align:center">
+              ${brandLogoMarkup("brand-logo")}
+              <h1 style="font-size:22px;margin:0 0 8px">${signup ? "Create your space" : "Reconnect"}</h1>
+              <p>${signup ? "New identity? We verify your email and build your profile instantly." : "Enter your email to reconnect. We will verify and let you in."}</p>
+            </div>
+
+            <div class="tabs">
+              <button class="tab ${signup ? "" : "active"}" id="tabSignin">Reconnect</button>
+              <button class="tab ${signup ? "active" : ""}" id="tabSignup">Create</button>
+            </div>
+
+            <input class="input" id="email" placeholder="Email" value="${esc(state.email)}">
+            <input class="input ${signup ? "" : "hidden"}" id="displayName" placeholder="Display name" value="${esc(state.displayName)}">
+            <input class="input" id="passwordFacade" type="password" placeholder="Password">
+
+            <div class="row">
+              <button class="btn primary" id="sendBtn">${signup ? "Create" : "Enter"}</button>
+            </div>
+
+            <div class="otp-box ${state.otpSent ? "show" : ""}">
+              <input class="input" id="code" placeholder="6-digit verification code" inputmode="numeric" maxlength="6">
+              <button class="btn primary" id="verifyBtn" style="width:100%">Verify & Enter</button>
+            </div>
+
+            <div class="status" id="status"></div>
+            <div class="mini-note">${state.accountExists ? "Account found. Verify and enter right away." : "No account yet? Create your space after verification."}</div>
+            <div style="text-align:center;margin-top:8px;font-size:13px;color:#cfd7ea">${signup ? `Already inside? <span id="goSigninInline" style="cursor:pointer;color:#fff;font-weight:900">Reconnect</span>` : `New identity? <span id="goSignupInline" style="cursor:pointer;color:#fff;font-weight:900">Create one</span>`}</div>
+            <div class="row" style="margin-top:10px"><button class="btn secondary" id="backBtn" style="width:100%">Back</button></div>
+          </div>
+        </div>
+      `;
+      $("#goLogin").onclick=()=>{state.authMode="form"; state.accountMode="signin"; state.otpSent=false; renderAuth();};
+      $("#goSignup").onclick=()=>{state.authMode="form"; state.accountMode="signup"; state.otpSent=false; renderAuth();};
+      $("#tabSignin").onclick=()=>{state.accountMode="signin"; state.otpSent=false; renderAuth();};
+      $("#tabSignup").onclick=()=>{state.accountMode="signup"; state.otpSent=false; renderAuth();};
+      $("#goSigninInline") && ($("#goSigninInline").onclick=()=>{state.accountMode="signin"; state.otpSent=false; renderAuth();});
+      $("#goSignupInline") && ($("#goSignupInline").onclick=()=>{state.accountMode="signup"; state.otpSent=false; renderAuth();});
+      $("#backBtn").onclick=()=>{state.authMode="welcome"; state.otpSent=false; renderAuth();};
+      $("#sendBtn").onclick=sendCode;
+      $("#verifyBtn").onclick=verifyCode;
     }
 
     async function sendCode(){
       state.email = ($("#email").value || "").trim().toLowerCase();
-      if(state.authMode === "signup"){
-        state.displayName = ($("#displayName").value || "").trim();
-        if(!state.displayName) return setStatus("Enter a display name");
-      }
+      if(state.accountMode==="signup") state.displayName = ($("#displayName").value || "").trim();
       if(!state.email) return setStatus("Enter your email");
-      localStorage.setItem("echonode_saved_email", state.email);
-      localStorage.setItem("echonode_saved_email", state.email);
-
-      setStatus("Sending code...");
+      await checkAccountExists(state.email);
+      if(state.accountMode==="signup" && !state.displayName) return setStatus("Enter a display name");
+      setStatus("Sending verification...");
       try{
-        const r = await fetch(API + "/send-otp", {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({ email: state.email })
-        });
+        const r = await fetch(API + "/send-otp", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:state.email})});
         const d = await r.json().catch(()=>({}));
         if(!r.ok || !d.ok) return setStatus(d.error || "Failed to send code");
-        state.otpSent = true;
-        render();
-        setStatus("Code sent. Check your email.", true);
-      }catch(e){
-        setStatus("Error: " + e.message);
-      }
+        state.otpSent = true; renderAuth();
+        setStatus(state.accountExists ? "Verification sent. Reconnect to your account." : "Verification sent. Your space will be ready after verification.", true);
+      }catch(e){ setStatus("Error: " + e.message); }
     }
 
     async function verifyCode(){
       const code = ($("#code").value || "").trim();
       if(!state.email) return setStatus("Enter your email");
       if(!/^\d{6}$/.test(code)) return setStatus("Enter the 6-digit code");
-
-      setStatus("Verifying...");
+      setStatus("Signing into Firebase...");
       try{
-        const r = await fetch(API + "/verify-otp", {
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({ email: state.email, code })
-        });
+        const r = await fetch(API + "/verify-otp", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:state.email, code})});
         const d = await r.json().catch(()=>({}));
-        if(!d.token) return setStatus("Invalid or expired code");
-
-        setStatus("Signing into Firebase...");
-        const timeout = new Promise((_, reject)=>setTimeout(()=>reject(new Error("Firebase timeout")),10000));
-        await Promise.race([auth.signInWithCustomToken(d.token), timeout]);
+        if(!r.ok || !d.token) return setStatus(d.error || "Invalid or expired code");
+        await auth.signInWithCustomToken(d.token);
+        setStatus("Entered successfully", true);
       }catch(err){
-        setStatus("Error: " + err.message);
+        console.error("Firebase signIn error:", err);
+        setStatus("Firebase error: " + (err.code || err.message || "unknown"));
       }
+    }
+
+    function allPosts(){ const arr=[]; Object.entries(state.posts).forEach(([communityId,list])=>{ (list||[]).forEach(p=>arr.push({...p,communityId}));}); return arr; }
+    function topPosts(){
+      let list = allPosts();
+      if(state.currentCommunity !== "all") list = list.filter(p => p.communityId === state.currentCommunity);
+      const blocked = state.profile.blockedUsers || {};
+      list = list.filter(p => !blocked[p.uid]);
+      return list.sort((a,b)=>{
+        const scoreA=(a.likes||0)*5 + ((a.createdAt||0)/100000000000);
+        const scoreB=(b.likes||0)*5 + ((b.createdAt||0)/100000000000);
+        return scoreB-scoreA;
+      });
+    }
+    function friendCandidates(){
+      const blocked = state.profile.blockedUsers || {};
+      return Object.entries(state.profiles)
+        .filter(([uid,p]) => uid !== (state.user && state.user.uid) && !blocked[uid])
+        .map(([uid,p])=>({uid,...p})).slice(0,20);
+    }
+    function threadIdFor(a,b){ return [a,b].sort().join("__"); }
+    function openChatWith(uid){
+      if(!uid) return;
+      state.selectedDmUid = uid;
+      state.currentPage = "base";
+      markThreadRead(uid);
+      renderMain();
+    }
+    function unreadForUid(uid){
+      const threadId = state.user ? threadIdFor(state.user.uid, uid) : "";
+      return Number(state.unreadCounts[threadId] || 0);
+    }
+    function markThreadRead(uid){
+      if(!state.user || !uid) return;
+      const threadId = threadIdFor(state.user.uid, uid);
+      const thread = state.threads[threadId] || {};
+      const msgs = Object.values(thread.messages || {});
+      const latest = msgs.filter(m => m && m.to === state.user.uid).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).pop();
+      if(latest){
+        state.lastReadThreads[threadId] = Number(latest.createdAt || 0);
+        localStorage.setItem("echonode_last_reads", JSON.stringify(state.lastReadThreads));
+      }
+      state.unreadCounts[threadId] = 0;
+    }
+    function selectedThreadMessages(){
+      if(!state.user || !state.selectedDmUid) return [];
+      const id=threadIdFor(state.user.uid, state.selectedDmUid);
+      const thread=state.threads[id] || {}, messages=thread.messages || {};
+      return Object.entries(messages).map(([id,v])=>({id,...v})).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    }
+
+    function homeResults(){
+      const q = state.searchHome.trim().toLowerCase();
+      if(!q) return [];
+      const communities = Object.entries(state.communities)
+        .filter(([id,c]) => id !== "all" && (id.toLowerCase().includes(q) || String(c.name||"").toLowerCase().includes(q) || String(c.topic||"").toLowerCase().includes(q)))
+        .map(([id,c])=>({type:"community", id, title:c.name, sub:c.topic || ""}));
+      const blocked = state.profile.blockedUsers || {};
+      const users = Object.entries(state.profiles)
+        .filter(([uid,p]) => uid !== (state.user && state.user.uid) && !blocked[uid] && (
+          String(p.displayName||"").toLowerCase().includes(q)
+        ))
+        .map(([uid,p])=>({type:"user", id:uid, title:p.displayName || "User", sub:p.mood || ""}));
+      return [...communities, ...users].slice(0,8);
+    }
+
+    function baseResults(){
+      const q = state.searchBase.trim().toLowerCase();
+      const users = friendCandidates();
+      if(!q) return users;
+      return users.filter(u => String(u.displayName||"").toLowerCase().includes(q) || String(u.mood||"").toLowerCase().includes(q) || String(u.playingGame||"").toLowerCase().includes(q));
     }
 
     async function createPost(){
-      const box = $("#composer");
-      if(!box || !state.user) return;
-      const text = box.value.trim();
-      if(!text) return;
-
-      const now = Date.now();
-      if(now - state.lastPostAt < 2000){
-        showToast("Slow down", "Wait a moment before posting again");
-        return;
-      }
-
-      state.lastPostAt = now;
-
-      await db.ref("posts/" + state.currentCommunity).push({
-        uid: state.user.uid,
-        email: state.email,
+      const box=$("#composer"); if(!box || !state.user) return;
+      const text=box.value.trim();
+      const postLink = ($("#postLinkInput")?.value || "").trim();
+      const postImage = state.draftPostImage || "";
+      if(!text && !postLink && !postImage) return;
+      const targetCommunity = state.currentCommunity === "all" ? "general" : state.currentCommunity;
+      const now=Date.now();
+      if(now - state.lastPostAt < 1800){ toast("Slow down", "Wait a moment before posting again"); return; }
+      state.lastPostAt=now;
+      await db.ref("posts/" + targetCommunity).push({
+        uid: state.user.uid, email: state.email,
         name: state.profile.displayName || state.email.split("@")[0],
-        avatar: state.profile.avatar || "",
-        text: text.slice(0, 700),
-        createdAt: now
+        avatar: state.profile.avatar || "", text:text.slice(0,700), image:postImage, link:postLink, likes:0, likedBy:{}, createdAt:now
       });
-
-      box.value = "";
-      await addXP(5);
-      showToast("Posted", "Your update is live");
-    }
-
-    function openEditor(){ $("#editorModal").classList.add("open"); }
-    function closeEditor(){ $("#editorModal").classList.remove("open"); }
-
-    async function saveProfile(){
-      const next = {
-        displayName: $("#profileName").value.trim() || state.profile.displayName,
-        mood: $("#profileMood").value.trim() || state.profile.mood,
-        showcase: $("#profileShowcase").value.trim() || state.profile.showcase,
-        musicUrl: $("#profileMusic").value.trim(),
-        presence: $("#profilePresence").value || state.profile.presence,
-        avatar: state.profile.avatar || "",
-        cover: state.profile.cover || ""
-      };
-      state.profile = { ...state.profile, ...next };
-      await db.ref("profiles/" + state.user.uid).update(next);
-      await setPresence(next.presence);
-      closeEditor();
+      box.value="";
+      if($("#postLinkInput")) $("#postLinkInput").value="";
+      resetDraftMedia();
       renderMain();
-      showToast("Saved", "Profile updated");
+      await addXP(5); toast("Posted", "Your update is live");
     }
 
-    function renderAuth(){
-      const signup = state.authMode === "signup";
-      $("#app").innerHTML = `
-        <div class="auth ${state.authMode!=="welcome"?"hidden":""}">
-          <div class="welcome-top">
-            <div class="logo">En</div>
-            <h1>WELCOME TO<br>ECHONODE</h1>
-            <p>Your space for communities, clips, voice notes later, and a profile shaped your way.</p>
-          </div>
-          <div class="welcome-actions">
-            <button class="hero-btn light" id="goSignup">Register</button>
-            <button class="hero-btn dark" id="goLogin">Log In</button>
-          </div>
-        </div>
+    async function likePost(communityId, postId){
+      if(!state.user) return;
+      const ref=db.ref("posts/" + communityId + "/" + postId), snap=await ref.get(), data=snap.val();
+      if(!data) return;
+      const likedBy = data.likedBy || {}, already=!!likedBy[state.user.uid];
+      if(already) delete likedBy[state.user.uid]; else likedBy[state.user.uid]=true;
+      await ref.update({likedBy, likes:Object.keys(likedBy).length});
+    }
 
-        <div class="auth ${state.authMode==="welcome"?"hidden":""}">
-          <div class="auth-card">
-            <div class="logo" style="width:62px;height:62px;font-size:28px">En</div>
-            <h1 style="font-size:22px;margin:0 0 8px;text-align:center">${signup ? "Create your EchoNode ID" : "Pick up the conversation"}</h1>
-            <p style="text-align:center">${signup ? "Create your identity, join communities, and shape your profile the way you want." : "Enter with email, join communities, and keep your profile in your own style."}</p>
-            <input class="input" id="email" placeholder="Email address" value="${esc(state.email)}">
-            <input class="input ${signup ? "" : "hidden"}" id="displayName" placeholder="Display name" value="${esc(state.displayName)}">
-            <div class="row">
-              <button class="btn primary" id="sendBtn">Continue</button>
-              <button class="btn secondary" id="fastBtn">Fast entry</button>
+    async function sendDM(){
+      if(!state.user || !state.selectedDmUid) return;
+      const input=$("#dmInput"); if(!input) return;
+      const text=input.value.trim(); if(!text) return;
+      const threadId=threadIdFor(state.user.uid, state.selectedDmUid);
+      await db.ref("dms/" + threadId + "/messages").push({
+        text:text.slice(0,500), from:state.user.uid, to:state.selectedDmUid,
+        createdAt:Date.now(), name: state.profile.displayName || state.email.split("@")[0]
+      });
+      input.value="";
+    }
+
+    async function createCommunity(){
+      if(!state.user || !state.founder) return;
+      const rawName = ($("#newCommunityName").value || "").trim();
+      const rawTag = ($("#newCommunityTag").value || "").trim().toLowerCase();
+      const topic = ($("#newCommunityTopic").value || "").trim();
+      if(!rawName || !rawTag) return toast("Missing info", "Name and tag are required");
+      const tag = rawTag.replace(/[^a-z0-9_-]/g, "");
+      if(!tag) return toast("Invalid tag", "Use letters and numbers only");
+      const snap = await db.ref("communities/" + tag).get();
+      if(snap.exists()) return toast("Already exists", "That community tag is already taken");
+      await db.ref("communities/" + tag).set({
+        name: rawName,
+        topic: topic || ("Community for " + rawName),
+        owner: state.user.uid,
+        admins: { [state.user.uid]: true },
+        createdAt: Date.now()
+      });
+      state.createCommunityOpen = false;
+      await loadCommunities();
+      state.currentCommunity = tag;
+      state.currentPage = "home";
+      renderMain();
+      toast("Community created", "#" + tag + " is live");
+    }
+
+    async function saveSettings(){
+      if(!state.user) return;
+      const country = countryByCode($("#settingsCountry").value || "SA");
+      state.profile.email = ($("#settingsEmail").value || "").trim().toLowerCase() || state.profile.email;
+      state.profile.securityKey = ($("#settingsSecurityKey").value || "").trim();
+      state.profile.birthday = ($("#settingsBirthday").value || "").trim();
+      state.profile.gender = ($("#settingsGender").value || "").trim();
+      state.profile.friendsVisibility = ($("#settingsFriendsVisibility").value || "public").trim();
+      state.profile.countryCode = country.code;
+      state.profile.countryFlag = country.flag;
+      state.profile.countryName = country.name;
+      await db.ref("profiles/" + state.user.uid).update({
+        email: state.profile.email,
+        emailKey: emailKey(state.profile.email),
+        securityKey: state.profile.securityKey,
+        birthday: state.profile.birthday,
+        gender: state.profile.gender,
+        friendsVisibility: state.profile.friendsVisibility,
+        countryCode: state.profile.countryCode,
+        countryFlag: state.profile.countryFlag,
+        countryName: state.profile.countryName,
+        showBirthday: !!state.profile.showBirthday,
+        showCountry: !!state.profile.showCountry,
+        notificationsEnabled: !!state.profile.notificationsEnabled
+      });
+      await db.ref("emails/" + emailKey(state.profile.email)).set(state.user.uid);
+      state.settingsOpen = false;
+      renderMain();
+      toast("Saved", "Settings updated");
+    }
+
+    async function toggleProfileFlag(flag){
+      state.profile[flag] = !state.profile[flag];
+      if(state.user){
+        await db.ref("profiles/" + state.user.uid + "/" + flag).set(!!state.profile[flag]);
+      }
+      renderMain();
+    }
+
+    async function blockSelectedUser(){
+      if(!state.user || !state.selectedDmUid) return toast("No user", "Open a user in Base first");
+      const blocked = { ...(state.profile.blockedUsers || {}) };
+      blocked[state.selectedDmUid] = true;
+      state.profile.blockedUsers = blocked;
+      await db.ref("profiles/" + state.user.uid + "/blockedUsers").set(blocked);
+      state.selectedDmUid = "";
+      renderMain();
+      toast("Blocked", "User added to your block list");
+    }
+
+    async function unblockUser(uid){
+      const blocked = { ...(state.profile.blockedUsers || {}) };
+      delete blocked[uid];
+      state.profile.blockedUsers = blocked;
+      await db.ref("profiles/" + state.user.uid + "/blockedUsers").set(blocked);
+      renderMain();
+    }
+
+    function renderSidebar(){
+      return `
+        <div class="sidebar-backdrop ${state.sidebarOpen ? "show" : ""}" id="sidebarBackdrop"></div>
+        <aside class="sidebar ${state.sidebarOpen ? "open" : ""}" id="sidebar">
+          <div class="sidebar-top">
+            <div class="top-title">Communities</div>
+            <button class="icon-btn" id="closeSidebarBtn">${icon("close")}</button>
+          </div>
+          ${state.founder ? `<button class="tool-btn" id="openCreateCommunityBtn" style="width:100%;margin-bottom:12px">${icon("plus")} Create Community</button>` : ``}
+          <div class="community-list">
+            <div class="community-item" data-community="all">
+              <div class="community-row">
+                <div class="community-left">
+                  <div class="hash">⌂</div>
+                  <div>
+                    <div class="community-name">home feed</div>
+                    <div class="community-topic">Top liked and strongest posts</div>
+                  </div>
+                </div>
+                <div class="chip">${state.currentCommunity==="all" ? "Live" : "Go"}</div>
+              </div>
             </div>
-            <div class="otp-box ${state.otpSent ? "show" : ""}">
-              <input class="input" id="code" placeholder="6-digit verification code" inputmode="numeric" maxlength="6">
-              <button class="btn primary" id="verifyBtn" style="width:100%">Verify & Enter</button>
+            ${Object.entries(state.communities).filter(([id])=>id!=="all").map(([id,c])=>`
+              <div class="community-item" data-community="${id}">
+                <div class="community-row">
+                  <div class="community-left">
+                    <div class="hash">#</div>
+                    <div>
+                      <div class="community-name">${esc(c.name)}</div>
+                      <div class="community-topic">${esc(c.topic || "")}</div>
+                    </div>
+                  </div>
+                  <div class="chip">${state.currentCommunity===id ? "Live" : "Go"}</div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        </aside>
+      `;
+    }
+
+    function renderPostCard(p){
+      const liked=!!((p.likedBy || {})[state.user.uid]);
+      const c=state.communities[p.communityId] || {name:p.communityId || "community"};
+      const yt = youtubeEmbed(p.link || "");
+      const mediaBlock = p.image
+        ? `<div style="margin-top:12px"><img src="${p.image}" alt="" style="width:100%;border-radius:18px;display:block;border:1px solid rgba(255,255,255,.05)"></div>`
+        : yt
+          ? `<div style="margin-top:12px"><iframe src="${yt}" style="width:100%;height:220px;border:none;border-radius:18px;background:#0d1018" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+          : (p.link ? `<div style="margin-top:12px" class="card"><div class="card-title">Shared link</div><div class="card-sub"><a href="${p.link}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.link)}</a></div></div>` : ``);
+      return `
+        <div class="post-item">
+          <div class="post-head">
+            <div class="member-left">
+              <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.name || "U"))}</div>
+              <div>
+                <div class="post-name">${esc(p.name || "User")}</div>
+                <div class="post-meta">${esc(c.name)} • ${esc(dateLabel(p.createdAt))} • ${esc(timeLabel(p.createdAt))}</div>
+              </div>
             </div>
-            <div class="status" id="status"></div>
-            <div class="row" style="margin-top:10px">
-              <button class="btn secondary" id="backBtn" style="width:100%">Back</button>
-            </div>
+            <div class="chip">${esc(c.name)}</div>
+          </div>
+          ${p.text ? `<div class="post-text">${esc(p.text || "")}</div>` : ``}
+          ${mediaBlock}
+          <div class="post-actions">
+            <button class="pill-action ${liked ? "active" : ""}" data-like-community="${p.communityId}" data-like-post="${p.id}">♡ ${p.likes || 0}</button>
+            <div class="chip">${(p.likes || 0) > 0 ? "Hot" : "Fresh"}</div>
           </div>
         </div>
       `;
-
-      $("#goLogin").onclick = ()=>{ state.authMode="login"; state.otpSent=false; render(); };
-      $("#goSignup").onclick = ()=>{ state.authMode="signup"; state.otpSent=false; render(); };
-      $("#backBtn").onclick = ()=>{ state.authMode="welcome"; state.otpSent=false; render(); };
-      $("#sendBtn").onclick = sendCode;
-      $("#fastBtn").onclick = sendCode;
-      $("#verifyBtn").onclick = verifyCode;
     }
 
-    function renderCommunitiesPage(){
-      const current = state.communities[state.currentCommunity] || Object.values(state.communities)[0] || {name:"general", topic:"Community feed"};
-      const posts = state.posts[state.currentCommunity] || [];
+    function renderHomePage(){
+      const current=state.communities[state.currentCommunity] || state.communities.all;
+      const feed=topPosts();
+      const results = homeResults();
       return `
-        <div class="page ${state.currentPage==="communities"?"active":""}" id="page-communities">
+        <div class="page ${state.currentPage==="home"?"active":""}" id="page-home">
           <div class="topbar">
-            <div>
-              <div class="top-title">${esc(current.name)}</div>
-              <div class="top-sub">${esc(current.topic || "Community feed")}</div>
-            </div>
-          </div>
-          <div class="page-body">
-            <div class="section-title">COMMUNITIES</div>
-            <div class="community-list">
-              ${Object.entries(state.communities).map(([id,c])=>`
-                <div class="community-item" data-community="${id}">
-                  <div class="community-row">
-                    <div class="community-left">
-                      <div class="hash">#</div>
-                      <div>
-                        <div class="community-name">${esc(c.name)}</div>
-                        <div class="community-topic">${esc(c.topic || "")}</div>
-                      </div>
-                    </div>
-                    <button class="tool-btn">${state.currentCommunity===id ? "Open" : "Go"}</button>
-                  </div>
-                </div>
-              `).join("")}
-            </div>
-
-            <div class="section-title">POST SOMETHING</div>
-            <div class="composer">
-              <div class="compose-wrap">
-                <textarea class="compose" id="composer" placeholder="Share something with ${esc(current.name)}"></textarea>
-                <button class="send" id="sendPostBtn">Post</button>
+            <div class="top-left">
+              <button class="icon-btn" id="openSidebarBtn">${icon("menu")}</button>
+              <div>
+                <div class="top-title">Home</div>
+                <div class="top-sub">${state.currentCommunity==="all" ? "Top liked posts across EchoNode" : esc(current.name + " • " + (current.topic || ""))}</div>
               </div>
             </div>
+            <div class="top-right">
+              <button class="icon-btn" id="noticeBtn">${icon("bell")}</button>
+              <button class="icon-btn" id="openSettingsBtn">${icon("settings")}</button>
+            </div>
+          </div>
 
-            <div class="section-title">LATEST POSTS</div>
-            <div class="post-list">
-              ${posts.length ? posts.slice().reverse().map(p=>`
-                <div class="post-item">
-                  <div class="post-head">
-                    <div class="member-left">
-                      <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.name || "U"))}</div>
-                      <div>
-                        <div class="community-name">${esc(p.name || "User")}</div>
-                        <div class="post-meta">${esc(timeLabel(p.createdAt))}</div>
-                      </div>
-                    </div>
+          <div class="page-body fade">
+            <div class="search-shell">
+              ${icon("search")}
+              <input id="homeSearch" placeholder="Search users or communities" value="${esc(state.searchHome)}">
+            </div>
+
+            ${results.length ? `
+              <div class="search-results">
+                ${results.map(r=>`
+                  <div class="search-result" data-result-type="${r.type}" data-result-id="${r.id}">
+                    <div class="card-title">${esc(r.title)}</div>
+                    <div class="muted">${esc(r.type === "community" ? "#" + r.id + " • " + r.sub : r.sub)}</div>
                   </div>
-                  <div class="post-text">${esc(p.text || "")}</div>
+                `).join("")}
+              </div>
+            ` : ``}
+
+            <div class="composer">
+              <div class="compose-wrap">
+                <textarea class="compose" id="composer" placeholder="${state.currentCommunity==="all" ? "Share something in general or switch to a community" : `Share something with ${esc(current.name)}`}"></textarea>
+                <button class="send" id="sendPostBtn">Post</button>
+              </div>
+              <div class="row" style="margin-top:10px">
+                <label class="file-btn">Add image<input type="file" id="postImageInput" accept="image/*"></label>
+                <input class="input" id="postLinkInput" placeholder="Paste a link (YouTube or any URL)" value="${esc(state.draftPostLink || "")}" style="margin:0;flex:1;min-width:180px">
+              </div>
+              ${(state.draftPostImage || state.draftPostLink) ? `
+                <div class="card" style="margin-top:10px">
+                  <div class="card-title">Post preview</div>
+                  ${state.draftPostImage ? `<img src="${state.draftPostImage}" alt="" style="width:100%;border-radius:16px;display:block;margin-top:8px">` : ``}
+                  ${state.draftPostLink ? `<div class="card-sub" style="margin-top:8px;word-break:break-all">${esc(state.draftPostLink)}</div>` : ``}
                 </div>
-              `).join("") : `
+              ` : ``}
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+              <div class="chip">${state.currentCommunity==="all" ? "Top Feed" : "# " + esc(current.name)}</div>
+              <div class="chip">${feed.length} posts</div>
+              ${state.founder ? `<div class="chip">Founder mode</div>` : ``}
+            </div>
+
+            <div class="section-title">TOP POSTS</div>
+            <div class="post-list">
+              ${feed.length ? feed.map(renderPostCard).join("") : `
                 <div class="card">
                   <div class="card-title">No posts yet</div>
-                  <div class="card-sub">Be the first one to share something in this community.</div>
+                  <div class="card-sub">The feed is empty right now. Drop the first post and EchoNode starts moving.</div>
                 </div>
               `}
             </div>
@@ -730,50 +1071,84 @@
       `;
     }
 
-    function renderNoticesPage(){
+    function renderBasePage(){
+      const users=baseResults();
+      const selected=state.selectedDmUid ? (state.profiles[state.selectedDmUid] || {}) : null;
+      const messages=selectedThreadMessages();
       return `
-        <div class="page ${state.currentPage==="notices"?"active":""}" id="page-notices">
+        <div class="page ${state.currentPage==="base"?"active":""}" id="page-base">
           <div class="topbar">
             <div>
-              <div class="top-title">Notifications</div>
-              <div class="top-sub">Updates, activity, and member presence</div>
+              <div class="top-title">Base</div>
+              <div class="top-sub">Friends, direct messages, and your core space</div>
             </div>
           </div>
-          <div class="page-body">
-            <div class="grid" style="margin-bottom:12px">
-              <div class="card">
-                <div class="card-title">Members online</div>
-                <div class="card-sub">${Object.values(state.statusMap||{}).filter(x=>x.state==="online").length}</div>
-              </div>
-              <div class="card">
-                <div class="card-title">Total communities</div>
-                <div class="card-sub">${Object.keys(state.communities||{}).length}</div>
-              </div>
+
+          <div class="page-body fade">
+            <div class="search-shell">
+              ${icon("search")}
+              <input id="userSearch" placeholder="Search for a user" value="${esc(state.searchBase)}">
             </div>
 
-            <div class="section-title">SYSTEM</div>
-            <div class="notice-list">
-              ${state.notices.map(n=>`
-                <div class="notice-item">
-                  <div class="card-title">Notice</div>
-                  <div class="notice-sub">${esc(n)}</div>
+            <div class="section-title">FRIENDS</div>
+            <div class="friends-strip">
+              ${users.slice(0,4).map(u=>`
+                <div class="friend-stack">
+                  <div class="friend-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                  <div class="friend-name" data-open-chat="${u.uid}">${esc((u.displayName || "User").slice(0,8))}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
                 </div>
               `).join("")}
+              <div class="friend-stack" data-page="base">
+                <div class="friend-avatar">${icon("arrow")}</div>
+                <div class="friend-name">More</div>
+              </div>
             </div>
 
-            <div class="section-title">MEMBERS</div>
-            <div class="member-list">
-              ${Object.values(state.statusMap||{}).map(s=>`
-                <div class="member-item">
-                  <div class="member-row">
-                    <div class="member-left">
-                      <span class="dot ${presenceClass(s.state)}"></span>
-                      <span class="member-name">${esc(s.name||"User")}</span>
+            <div class="section-title">MESSAGES</div>
+            <div class="dm-layout">
+              <div class="thread-list">
+                ${users.length ? users.map(u=>`
+                  <div class="thread-item">
+                    <div class="thread-row">
+                      <div class="thread-left">
+                        <div class="post-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                        <div data-open-chat="${u.uid}" style="cursor:pointer;flex:1">
+                          <div class="thread-name">${esc(u.displayName || u.email || "User")}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
+                          <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
+                        </div>
+                      </div>
+                      <span class="dot ${presenceClass((state.statusMap[u.uid] || {}).state || u.presence || "offline")}"></span>
                     </div>
-                    <span class="member-sub">${esc(s.state||"offline")}</span>
                   </div>
+                `).join("") : `<div class="card"><div class="card-title">No users found</div><div class="card-sub">Once profiles load, your Base starts filling up.</div></div>`}
+              </div>
+
+              <div class="dm-window">
+                <div class="card-title">${selected ? `Chat with ${esc(selected.displayName || selected.email || "User")}` : "Select a friend"}</div>
+                ${selected ? `<div class="card-sub" style="margin-bottom:10px">${selected.mood ? esc(selected.mood) : "Direct messages"}</div>` : ``}
+                <div class="dm-messages">
+                  ${selected ? (
+                    messages.length ? messages.map(m=>`
+                      <div class="message-bubble ${m.from===state.user.uid ? "self" : ""}">
+                        <div class="t">${esc(m.text)}</div>
+                        <div class="m">${esc(m.from===state.user.uid ? "You" : (selected.displayName || "Friend"))} • ${esc(timeLabel(m.createdAt))}</div>
+                      </div>
+                    `).join("") : `<div class="card"><div class="card-sub">Start the first message in this Base chat.</div></div>`
+                  ) : `<div class="card"><div class="card-sub">Choose one of the users above to open Base messages.</div></div>`}
                 </div>
-              `).join("")}
+                ${selected ? `
+                  <div class="row" style="margin-top:10px">
+                    <button class="tool-btn" id="blockSelectedBtn">${icon("block")} Block user</button>
+                  </div>
+                  <div class="dm-compose">
+                    <div class="chat-bar">
+                      <button class="emoji-btn" id="emojiBtn" type="button">${icon("smile")}</button>
+                      <input class="input" id="dmInput" placeholder="Write a direct message" style="margin:0;flex:1;background:transparent;border:none;height:42px;padding:0 6px">
+                    </div>
+                    <button class="send-icon-btn" id="sendDmBtn" type="button">${icon("send")}</button>
+                  </div>
+                ` : ``}
+              </div>
             </div>
           </div>
         </div>
@@ -781,46 +1156,71 @@
     }
 
     function renderProfilePage(){
-      const p = state.profile;
-      const avatarInner = p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
-      let musicCard = `<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from edit profile.</div>`;
-      const sp = spotifyEmbed(p.musicUrl);
-      if(p.musicUrl && sp){
-        musicCard = `<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
-      } else if(p.musicUrl && isDirectAudio(p.musicUrl)){
-        musicCard = `<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
-      } else if(p.musicUrl){
-        musicCard = `<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
-      }
+      const p=state.profile, avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
+      let musicCard=`<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from Edit Profile.</div>`;
+      const sp=spotifyEmbed(p.musicUrl);
+      if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+      else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
+      else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
+      const pct=progressPercent(p.xp||0,p.level||1), friends=friendCandidates().slice(0,4);
+      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
+      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
 
       return `
         <div class="page ${state.currentPage==="profile"?"active":""}" id="page-profile">
           <div class="topbar">
             <div>
-              <div class="top-title">Your profile</div>
-              <div class="top-sub">Identity, style, and progress</div>
+              <div class="top-title">Profile</div>
+              <div class="top-sub">Your EchoNode identity</div>
             </div>
-            <button class="tool-btn" id="editProfileTopBtn">Edit</button>
           </div>
-          <div class="page-body">
+
+          <div class="page-body fade">
             <div class="profile-hero">
               <div class="cover" style="${p.cover ? `background-image:url('${p.cover}')` : ''}"></div>
               <div class="profile-body">
                 <div class="avatar-big">${avatarInner}</div>
                 <div class="name-line">
                   <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
-                  ${(state.profile.inventory || {}).premium_badge ? `<span class="badge">Premium</span>` : ``}
                   <span class="badge">${esc(p.presence || "online")}</span>
-                  <span class="badge">LVL ${esc(p.level || 1)}</span>
+                  ${countryLine}
+                  <span class="badge">Lv ${esc(p.level || 1)}</span>
+                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
+                  ${state.founder ? `<span class="badge">Founder</span>` : ``}
+                  ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
-                <div class="xp-box">XP: ${esc(p.xp || 0)} ⭐ • Paws: ${esc(p.coins || 0)} 🐾</div>
-                <div class="grid" style="margin-top:16px">
-                  <div class="card">
-                    <div class="card-title">My Space</div>
-                    <div class="card-sub">${esc(p.showcase || "")}</div>
+                <div class="xp-box">
+                  XP: ${esc(p.xp || 0)} ⭐
+                  <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+                </div>
+
+                <div class="card" style="margin-top:16px">
+                  <div class="card-title">My Space</div>
+                  <div class="card-sub">${esc(p.mySpace || "")}</div>
+                </div>
+
+                <div class="card" style="margin-top:12px">${musicCard}</div>
+
+                <div class="section-title">SHOWCASE</div>
+                <div class="showcase-grid">
+                  <div class="showcase-item">${p.showcase1 ? `<img src="${p.showcase1}" alt="">` : "Slot 1"}</div>
+                  <div class="showcase-item">${p.showcase2 ? `<img src="${p.showcase2}" alt="">` : "Slot 2"}</div>
+                  <div class="showcase-item">${p.showcase3 ? `<img src="${p.showcase3}" alt="">` : "Slot 3"}</div>
+                </div>
+
+                <div class="section-title">FRIENDS</div>
+                <div class="friends-strip">
+                  ${friends.map(f=>`
+                    <div class="friend-stack" data-open-member="${f.uid}">
+                      <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || f.email || "U"))}</div>
+                      <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
+                    </div>
+                  `).join("")}
+                  <div class="friend-stack" data-page="base">
+                    <div class="friend-avatar">${icon("arrow")}</div>
+                    <div class="friend-name">Base</div>
                   </div>
-                  <div class="card">${musicCard}</div>
                 </div>
               </div>
             </div>
@@ -829,160 +1229,221 @@
       `;
     }
 
-    
-    function renderStorePage(){
-      const inv = state.profile.inventory || {};
+    function renderMemberProfilePage(){
+      const uid = state.viewingProfileUid;
+      const p = uid ? (state.profiles[uid] || {}) : null;
+      if(!p) return '';
+      const avatarInner = p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || "U"));
+      let musicCard=`<div class="card-title">Music</div><div class="card-sub">No shared music yet.</div>`;
+      const sp=spotifyEmbed(p.musicUrl);
+      if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+      else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
+      else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
+      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
+      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
+      const playingLine = p.presence === "playing" && p.playingGame ? `<span class="badge">${icon("game")} ${esc(p.playingGame)}</span>` : ``;
+      const spaceTitle = p.gender === "female" ? "Her Space" : (p.gender === "male" ? "His Space" : "Their Space");
+      const showFriends = p.friendsVisibility !== "private";
+      const theirFriends = Object.entries(state.profiles)
+        .filter(([otherUid]) => otherUid !== uid)
+        .slice(0,4)
+        .map(([otherUid,other])=>({uid:otherUid,...other}));
       return `
-        <div class="page ${state.currentPage==="store"?"active":""}" id="page-store">
+        <div class="page ${state.currentPage==="memberProfile"?"active":""}" id="page-member-profile">
           <div class="topbar">
-            <div>
-              <div class="top-title">Store</div>
-              <div class="top-sub">Spend your Cat Paws on profile upgrades</div>
+            <div class="top-left">
+              <button class="icon-btn" id="backToBaseBtn">${icon("arrow")}</button>
+              <div>
+                <div class="top-title">${esc(p.displayName || "Profile")}</div>
+                <div class="top-sub">Member profile</div>
+              </div>
             </div>
-            <div class="store-balance">
-              <span class="paw-chip">${catPawSvg(20)}</span>
-              <span>${Number(state.profile.coins || 0)}</span>
+            <div class="top-right">
+              <button class="icon-btn" id="memberMenuBtn">${icon("more")}</button>
             </div>
           </div>
-          <div class="page-body">
-            <div class="store-preview">
-              <div class="card-title">Cat Paws</div>
-              <div class="card-sub">Earn paws from rewards, then unlock profile extras without changing your core app experience.</div>
+          ${state.memberMenuOpen ? `
+            <div class="member-menu">
+              <button id="memberMenuMessage">${icon("send")} Send Message</button>
+              <button id="memberMenuReport">${icon("flag")} Report user</button>
+              <button id="memberMenuBlock">${icon("block")} Block user</button>
             </div>
-            <div class="section-title">UPGRADES</div>
-            <div class="store-grid">
-              ${STORE_ITEMS.map(item=>`
-                <div class="store-card">
-                  <div class="store-top">
-                    <div>
-                      <div class="card-title">${esc(item.title)}</div>
-                      <div class="store-meta">${esc(item.desc)}</div>
-                    </div>
-                    ${inv[item.id] ? `<div class="price-pill owned-pill">Owned</div>` : `<div class="price-pill"><span class="paw-chip">${catPawSvg(18)}</span>${item.price}</div>`}
-                  </div>
-                  <div class="row" style="margin-top:12px">
-                    <button class="btn ${inv[item.id] ? "secondary" : "primary"}" data-buy-item="${item.id}" ${inv[item.id] ? "disabled" : ""}>${inv[item.id] ? "Unlocked" : "Buy now"}</button>
-                  </div>
+          ` : ``}
+          <div class="page-body fade">
+            <div class="profile-hero">
+              <div class="cover" style="${p.cover ? `background-image:url('${p.cover}')` : ''}"></div>
+              <div class="profile-body">
+                <div class="avatar-big">${avatarInner}</div>
+                <div class="name-line">
+                  <div class="name">${esc(p.displayName || "User")}</div>
+                  <span class="badge">${esc(p.presence || "online")}</span>
+                  ${countryLine}
+                  ${birthdayLine}
+                  ${playingLine}
                 </div>
-              `).join("")}
+                <div class="meta">${esc(p.mood || "")}</div>
+                <div class="card" style="margin-top:16px">
+                  <div class="card-title">${spaceTitle}</div>
+                  <div class="card-sub">${esc(p.mySpace || "")}</div>
+                </div>
+                <div class="card" style="margin-top:12px">${musicCard}</div>
+                <div class="section-title">SHOWCASE</div>
+                <div class="showcase-grid">
+                  <div class="showcase-item">${p.showcase1 ? `<img src="${p.showcase1}" alt="">` : "Slot 1"}</div>
+                  <div class="showcase-item">${p.showcase2 ? `<img src="${p.showcase2}" alt="">` : "Slot 2"}</div>
+                  <div class="showcase-item">${p.showcase3 ? `<img src="${p.showcase3}" alt="">` : "Slot 3"}</div>
+                </div>
+                <div class="section-title">FRIENDS</div>
+                ${showFriends ? `
+                  <div class="friends-strip">
+                    ${theirFriends.map(f=>`
+                      <div class="friend-stack">
+                        <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || "U"))}</div>
+                        <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
+                      </div>
+                    `).join("")}
+                  </div>
+                ` : `<div class="card"><div class="card-sub">This friends list is private.</div></div>`}
+              </div>
             </div>
           </div>
         </div>
       `;
     }
 
-    function renderRewardsDrawer(){
+    function renderSettingsDrawer(){
+      const blocked = Object.keys(state.profile.blockedUsers || {});
       return `
-        <div class="drawer ${state.rewardsOpen ? "open" : ""}" id="rewardsDrawer">
+        <div class="drawer ${state.settingsOpen ? "open" : ""}" id="settingsDrawer">
           <div class="sheet">
             <div class="sheet-handle"></div>
             <div class="sheet-head">
-              <div class="sheet-title">Cat Paw Rewards</div>
-              <button class="tool-btn" id="closeRewardsBtn">Close</button>
+              <div class="sheet-title">Settings</div>
+              <button class="tool-btn" id="closeSettingsBtn">Close</button>
             </div>
-            <div class="store-preview" style="margin-bottom:12px">
-              <div class="card-title">Rewards balance</div>
-              <div class="card-sub">Current paws: ${Number(state.profile.coins || 0)} • XP: ${Number(state.profile.xp || 0)}</div>
-            </div>
-            <div class="reward-grid">
-              ${Object.values(REWARD_TIERS).map(cfg=>`
-                <div class="reward-card">
-                  <div class="reward-top">
+
+            <input class="input" id="settingsEmail" placeholder="Email" value="${esc(state.profile.email || state.email)}">
+            <input class="input" id="settingsSecurityKey" placeholder="Security Key (your own strong code)" value="${esc(state.profile.securityKey || "")}">
+            <input class="input" id="settingsBirthday" type="date" value="${esc(state.profile.birthday || "")}">
+            <select class="select input" id="settingsGender">
+              <option value="" ${!state.profile.gender ? "selected" : ""}>Gender not set</option>
+              <option value="male" ${state.profile.gender==="male" ? "selected" : ""}>Male</option>
+              <option value="female" ${state.profile.gender==="female" ? "selected" : ""}>Female</option>
+            </select>
+            <select class="select input" id="settingsFriendsVisibility">
+              <option value="public" ${state.profile.friendsVisibility==="public" ? "selected" : ""}>Friends list public</option>
+              <option value="private" ${state.profile.friendsVisibility==="private" ? "selected" : ""}>Friends list private</option>
+            </select>
+            <select class="select input" id="settingsCountry">
+              ${countryOptions.map(c=>`<option value="${c.code}" ${state.profile.countryCode===c.code?"selected":""}>${c.flag} ${c.name}</option>`).join("")}
+            </select>
+
+            <div class="section-title">PRIVACY</div>
+            <div class="setting-list">
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
                     <div>
-                      <div class="card-title">${cfg.title}</div>
-                      <div class="reward-meta">${cfg.label}</div>
+                      <div class="setting-name">Show birthday</div>
+                      <div class="setting-sub">Display your birthday on profile</div>
                     </div>
-                    <div class="reward-pill">${canClaimReward(cfg.key) ? "Ready" : rewardTimeLeft(cfg.key)}</div>
                   </div>
-                  <div class="card-sub" style="margin-top:10px">Reward: +${cfg.coins} paws • +${cfg.xp} XP</div>
-                  <div class="row" style="margin-top:12px">
-                    <button class="btn ${canClaimReward(cfg.key) ? "primary" : "secondary"}" data-claim-reward="${cfg.key}" ${canClaimReward(cfg.key) ? "" : "disabled"}>${canClaimReward(cfg.key) ? "Claim" : rewardTimeLeft(cfg.key)}</button>
-                  </div>
+                  <button class="switch ${state.profile.showBirthday ? "on" : ""}" id="toggleBirthday"></button>
                 </div>
-              `).join("")}
+              </div>
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div>
+                      <div class="setting-name">Show country flag</div>
+                      <div class="setting-sub">Display your flag near status</div>
+                    </div>
+                  </div>
+                  <button class="switch ${state.profile.showCountry ? "on" : ""}" id="toggleCountry"></button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div>
+                      <div class="setting-name">Notifications</div>
+                      <div class="setting-sub">Enable or mute app notices</div>
+                    </div>
+                  </div>
+                  <button class="switch ${state.profile.notificationsEnabled ? "on" : ""}" id="toggleNotifications"></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">BLOCKED USERS</div>
+            <div class="setting-list">
+              ${blocked.length ? blocked.map(uid=>{
+                const p = state.profiles[uid] || {};
+                return `
+                  <div class="setting-item">
+                    <div class="setting-row">
+                      <div class="setting-left">
+                        <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || "U"))}</div>
+                        <div>
+                          <div class="setting-name">${esc(p.displayName || p.email || uid)}</div>
+                          <div class="setting-sub">Blocked</div>
+                        </div>
+                      </div>
+                      <button class="tool-btn" data-unblock="${uid}">Unblock</button>
+                    </div>
+                  </div>
+                `;
+              }).join("") : `<div class="card"><div class="card-sub">No blocked users yet.</div></div>`}
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <button class="btn primary" id="saveSettingsBtn">Save Settings</button>
+              <button class="btn secondary" id="logoutBtn">Sign out</button>
             </div>
           </div>
         </div>
       `;
     }
 
-
-    function renderStorePage(){
-      const inv = state.profile.inventory || {};
+    function renderAIDrawer(){
       return `
-        <div class="page ${state.currentPage==="store"?"active":""}" id="page-store">
-          <div class="topbar">
-            <div>
-              <div class="top-title">Store</div>
-              <div class="top-sub">Elegant upgrades powered by Cat Paws</div>
-            </div>
-            <div class="store-balance">
-              <span class="paw-chip">${catPawSvg(20)}</span>
-              <span>${esc(state.profile.coins || 0)}</span>
-            </div>
-          </div>
-          <div class="page-body">
-            <div class="store-preview">
-              <div class="card-title">Cat Paws balance</div>
-              <div class="card-sub">Spend paws on profile style upgrades. Your core app stays untouched.</div>
-            </div>
-            <div class="section-title">STORE ITEMS</div>
-            <div class="store-grid">
-              ${STORE_ITEMS.map(item=>`
-                <div class="store-card">
-                  <div class="store-top">
-                    <div>
-                      <div class="card-title">${esc(item.title)}</div>
-                      <div class="store-meta">${esc(item.desc)}</div>
-                    </div>
-                    ${(state.profile.inventory || {})[item.id]
-                      ? `<div class="price-pill owned-pill">Owned</div>`
-                      : `<div class="price-pill"><span class="paw-chip">${catPawSvg(18)}</span>${item.price}</div>`}
-                  </div>
-                  <div class="row" style="margin-top:12px">
-                    <button class="btn ${((state.profile.inventory || {})[item.id]) ? "secondary" : "primary"}" data-buy-item="${item.id}" ${((state.profile.inventory || {})[item.id]) ? "disabled" : ""}>
-                      ${((state.profile.inventory || {})[item.id]) ? "Unlocked" : "Buy now"}
-                    </button>
-                  </div>
-                </div>
-              `).join("")}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderRewardsDrawer(){
-      return `
-        <div class="drawer ${state.rewardsOpen ? "open" : ""}" id="rewardsDrawer">
+        <div class="drawer ${state.aiOpen ? "open" : ""}" id="aiDrawer">
           <div class="sheet">
             <div class="sheet-handle"></div>
             <div class="sheet-head">
-              <div class="sheet-title">Cat Paw Rewards</div>
-              <button class="tool-btn" id="closeRewardsBtn">Close</button>
+              <div class="sheet-title">Echo AI</div>
+              <button class="tool-btn" id="closeAiBtn">Close</button>
             </div>
-            <div class="store-preview" style="margin-bottom:12px">
-              <div class="card-title">Reward center</div>
-              <div class="card-sub">Claim paws and XP from daily, monthly, and yearly milestones.</div>
+            <div class="card"><div class="card-title">Quick help</div><div class="card-sub">I can guide users around Home, Base, Profile, and communities.</div></div>
+            <div class="grid" style="margin-top:10px">
+              <button class="tool-btn" data-ai="profile">Profile tips</button>
+              <button class="tool-btn" data-ai="base">Base help</button>
+              <button class="tool-btn" data-ai="home">Home feed</button>
+              <button class="tool-btn" data-ai="founder">Founder mode</button>
             </div>
-            <div class="reward-grid">
-              ${Object.values(REWARD_TIERS).map(cfg=>`
-                <div class="reward-card">
-                  <div class="reward-top">
-                    <div>
-                      <div class="card-title">${cfg.title}</div>
-                      <div class="reward-meta">${cfg.label}</div>
-                    </div>
-                    <div class="reward-pill">${canClaimReward(cfg.key) ? "Ready" : rewardTimeLeft(cfg.key)}</div>
-                  </div>
-                  <div class="card-sub" style="margin-top:10px">+${cfg.coins} paws • +${cfg.xp} XP</div>
-                  <div class="row" style="margin-top:12px">
-                    <button class="btn ${canClaimReward(cfg.key) ? "primary" : "secondary"}" data-claim-reward="${cfg.key}" ${canClaimReward(cfg.key) ? "" : "disabled"}>
-                      ${canClaimReward(cfg.key) ? "Claim" : rewardTimeLeft(cfg.key)}
-                    </button>
-                  </div>
-                </div>
-              `).join("")}
+            <div class="card" style="margin-top:12px" id="aiAnswerCard">
+              <div class="card-title">Response</div>
+              <div class="card-sub">Ask the cat and it points you in the right direction.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCreateCommunityDrawer(){
+      return `
+        <div class="drawer ${state.createCommunityOpen ? "open" : ""}" id="createCommunityDrawer">
+          <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <div class="sheet-title">Create Community</div>
+              <button class="tool-btn" id="closeCreateCommunityBtn">Close</button>
+            </div>
+            <input class="input" id="newCommunityName" placeholder="Community name e.g. Souls Like">
+            <input class="input" id="newCommunityTag" placeholder="Tag e.g. soulslike">
+            <textarea class="textarea" id="newCommunityTopic" placeholder="What is this community about?"></textarea>
+            <div class="row">
+              <button class="btn primary" id="createCommunityBtn">Create</button>
             </div>
           </div>
         </div>
@@ -991,22 +1452,22 @@
 
     function renderMain(){
       $("#app").innerHTML = `
-        ${renderCommunitiesPage()}
-        ${renderNoticesPage()}
+        ${renderSidebar()}
+        ${renderHomePage()}
+        ${renderBasePage()}
         ${renderProfilePage()}
-        ${renderStorePage()}
-        ${renderRewardsDrawer()}
+        ${renderMemberProfilePage()}
+        ${renderSettingsDrawer()}
+        ${renderAIDrawer()}
+        ${renderCreateCommunityDrawer()}
 
         <div class="bottom-nav">
-          <div class="nav-row" style="grid-template-columns:repeat(4,1fr)">
-            <button class="nav-btn ${state.currentPage==="communities"?"active":""}" data-page="communities">
+          <div class="nav-row">
+            <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
               ${icon("home")}<span>Home</span>
             </button>
-            <button class="nav-btn ${state.currentPage==="notices"?"active":""}" data-page="notices">
-              ${icon("bell")}<span>Alerts</span>
-            </button>
-            <button class="nav-btn ${state.currentPage==="store"?"active":""}" data-page="store">
-              ${icon("store")}<span>Store</span>
+            <button class="nav-btn ${state.currentPage==="base"?"active":""}" data-page="base">
+              ${icon("base")}<span>Base</span>
             </button>
             <button class="nav-btn ${state.currentPage==="profile"?"active":""}" data-page="profile">
               ${icon("profile")}<span>Profile</span>
@@ -1014,15 +1475,16 @@
           </div>
         </div>
 
-        ${state.currentPage==="communities" ? `<button class="cat-paw-fab" id="openRewardsBtn" title="Rewards">${catPawSvg(30)}</button>` : ``}
+        <button class="ai-fab" id="openAiBtn">${icon("ai")}</button>
 
         <div class="modal" id="editorModal">
           <div class="sheet">
             <div class="sheet-handle"></div>
             <div class="sheet-head">
-              <div class="sheet-title">Edit profile</div>
+              <div class="sheet-title">Edit Profile</div>
               <button class="tool-btn" id="closeEditorBtn">Close</button>
             </div>
+
             <input class="input" id="profileName" placeholder="Display name" value="${esc(state.profile.displayName||"")}">
             <input class="input" id="profileMood" placeholder="Mood / status text" value="${esc(state.profile.mood||"")}">
             <select class="select input" id="profilePresence">
@@ -1032,11 +1494,20 @@
               <option value="offline" ${state.profile.presence==="offline"?"selected":""}>offline</option>
             </select>
             <input class="input" id="profileMusic" placeholder="Spotify / MP3 / music link" value="${esc(state.profile.musicUrl||"")}">
-            <textarea class="textarea" id="profileShowcase" placeholder="My Space text">${esc(state.profile.showcase||"")}</textarea>
+            <textarea class="textarea" id="profileMySpace" placeholder="My Space text">${esc(state.profile.mySpace||"")}</textarea>
+
             <div class="file-row">
-              <label class="file-btn">Avatar<input type="file" id="avatarFile" accept="image/*"></label>
+              <label class="file-btn">Profile Picture<input type="file" id="avatarFile" accept="image/*"></label>
               <label class="file-btn">Cover<input type="file" id="coverFile" accept="image/*"></label>
             </div>
+
+            <div class="section-title">SHOWCASE IMAGES</div>
+            <div class="file-row">
+              <label class="file-btn">Showcase 1<input type="file" id="showcase1File" accept="image/*"></label>
+              <label class="file-btn">Showcase 2<input type="file" id="showcase2File" accept="image/*"></label>
+              <label class="file-btn">Showcase 3<input type="file" id="showcase3File" accept="image/*"></label>
+            </div>
+
             <div class="row" style="margin-top:10px">
               <button class="btn primary" id="saveProfileBtn">Save</button>
             </div>
@@ -1044,79 +1515,181 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>{
-        btn.onclick = ()=>{
-          state.currentPage = btn.dataset.page;
-          state.rewardsOpen = false;
-          renderMain();
-        };
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
+      $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
+      $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.memberMenuOpen=false; state.currentPage="memberProfile"; renderMain(); });
+
+      $$("[data-result-type]").forEach(el=>el.onclick=()=>{
+        if(el.dataset.resultType==="community"){ state.currentCommunity=el.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
+        else { state.viewingProfileUid=el.dataset.resultId; state.currentPage="memberProfile"; state.searchHome=""; }
+        renderMain();
       });
 
-      $$(".community-item[data-community]").forEach(card=>{
-        card.onclick = ()=>{
-          state.currentCommunity = card.dataset.community;
-          state.currentPage = "communities";
-          renderMain();
+      $("#openSidebarBtn") && ($("#openSidebarBtn").onclick=()=>{ state.sidebarOpen=true; renderMain(); });
+      $("#closeSidebarBtn") && ($("#closeSidebarBtn").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
+      $("#sidebarBackdrop") && ($("#sidebarBackdrop").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
+
+      $("#openSettingsBtn") && ($("#openSettingsBtn").onclick=()=>{ state.settingsOpen=true; renderMain(); });
+      $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
+      $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
+
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberMenuOpen=false; state.currentPage="base"; state.viewingProfileUid=""; renderMain(); });
+      $("#memberMenuBtn") && ($("#memberMenuBtn").onclick=()=>{ state.memberMenuOpen=!state.memberMenuOpen; renderMain(); });
+      $("#memberMenuMessage") && ($("#memberMenuMessage").onclick=()=>{ state.memberMenuOpen=false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); });
+      $("#memberMenuReport") && ($("#memberMenuReport").onclick=()=>{ state.reportUid=state.viewingProfileUid; state.memberMenuOpen=false; toast("Report saved", "This report was saved for review."); });
+      $("#memberMenuBlock") && ($("#memberMenuBlock").onclick=()=>{ state.memberMenuOpen=false; state.selectedDmUid=state.viewingProfileUid; blockSelectedUser(); });
+
+      $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
+      $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
+      $("#aiDrawer") && ($("#aiDrawer").onclick=e=>{ if(e.target.id==="aiDrawer"){ state.aiOpen=false; renderMain(); } });
+
+      $("#openCreateCommunityBtn") && ($("#openCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=true; renderMain(); });
+      $("#closeCreateCommunityBtn") && ($("#closeCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=false; renderMain(); });
+      $("#createCommunityDrawer") && ($("#createCommunityDrawer").onclick=e=>{ if(e.target.id==="createCommunityDrawer"){ state.createCommunityOpen=false; renderMain(); } });
+      $("#createCommunityBtn") && ($("#createCommunityBtn").onclick=createCommunity);
+
+      $$("[data-ai]").forEach(btn=>btn.onclick=()=>{
+        const answer=$("#aiAnswerCard");
+        const map={
+          profile:"Use Edit Profile to change mood, music, cover, profile picture, and the 3 Showcase slots.",
+          base:"Base is your private zone. Pick a user, open the thread, and send direct messages there. You can block from Base too.",
+          home:"Home shows top liked posts from all communities. Open the sidebar to switch to one specific community feed.",
+          founder:"Your founder email gets detected automatically and unlocks Founder mode and community creation."
         };
+        if(answer) answer.innerHTML=`<div class="card-title">Response</div><div class="card-sub">${esc(map[btn.dataset.ai] || "Ready.")}</div>`;
       });
 
-      $("#openRewardsBtn") && ($("#openRewardsBtn").onclick = ()=>{ state.rewardsOpen = true; renderMain(); });
-      $("#closeRewardsBtn") && ($("#closeRewardsBtn").onclick = ()=>{ state.rewardsOpen = false; renderMain(); });
-      $("#rewardsDrawer") && ($("#rewardsDrawer").onclick = e=>{ if(e.target.id==="rewardsDrawer"){ state.rewardsOpen = false; renderMain(); } });
-      $$("[data-claim-reward]").forEach(btn=>btn.onclick=()=>claimReward(btn.dataset.claimReward));
-      $$("[data-buy-item]").forEach(btn=>btn.onclick=()=>buyStoreItem(btn.dataset.buyItem));
-
-      $("#sendPostBtn") && ($("#sendPostBtn").onclick = createPost);
-      $("#composer") && $("#composer").addEventListener("keydown", e=>{
-        if(e.key==="Enter" && !e.shiftKey){
-          e.preventDefault();
-          createPost();
+      $("#noticeBtn") && ($("#noticeBtn").onclick=async ()=>{
+        const granted = await ensureNotificationPermission();
+        if(granted){
+          toast("Notifications enabled", "You will get real browser alerts for DMs and likes.");
+          browserNotify("EchoNode notifications are on", "DMs and likes will now reach you.");
+        } else {
+          toast("Notifications", "Browser permission is off or blocked.");
         }
       });
 
-      $("#editProfileTopBtn") && ($("#editProfileTopBtn").onclick = openEditor);
-      $("#closeEditorBtn") && ($("#closeEditorBtn").onclick = closeEditor);
-      $("#editorModal") && ($("#editorModal").onclick = e => { if(e.target.id==="editorModal") closeEditor(); });
-      $("#saveProfileBtn") && ($("#saveProfileBtn").onclick = saveProfile);
+      $("#sendPostBtn") && ($("#sendPostBtn").onclick=createPost);
+      $("#composer") && ($("#composer").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); createPost(); } }));
+      $("#postLinkInput") && ($("#postLinkInput").addEventListener("input", e=>{ state.draftPostLink=e.target.value; }));
+      const postImageInput = $("#postImageInput");
+      if(postImageInput){
+        postImageInput.onchange = async e => {
+          const f = e.target.files && e.target.files[0];
+          if(!f) return;
+          state.draftPostImage = await fileToDataUrl(f);
+          renderMain();
+          toast("Image ready", "Your post image is attached");
+        };
+      }
+      $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
+      $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
+      $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
+      $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
+      $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
 
-      $("#avatarFile") && ($("#avatarFile").onchange = async e => {
-        const f = e.target.files && e.target.files[0];
-        if(!f) return;
-        state.profile.avatar = await fileToDataUrl(f);
-        showToast("Avatar ready", "Save profile to keep it");
-      });
+      $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
+      $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberProfileMode=false; state.currentPage="base"; renderMain(); });
+      $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
+      $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
+      $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
 
-      $("#coverFile") && ($("#coverFile").onchange = async e => {
-        const f = e.target.files && e.target.files[0];
-        if(!f) return;
-        state.profile.cover = await fileToDataUrl(f);
-        showToast("Cover ready", "Save profile to keep it");
-      });
+      $("#saveSettingsBtn") && ($("#saveSettingsBtn").onclick=saveSettings);
+      $("#toggleBirthday") && ($("#toggleBirthday").onclick=()=>toggleProfileFlag("showBirthday"));
+      $("#toggleCountry") && ($("#toggleCountry").onclick=()=>toggleProfileFlag("showCountry"));
+      $("#toggleNotifications") && ($("#toggleNotifications").onclick=()=>toggleProfileFlag("notificationsEnabled"));
+      $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
+      $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
+      $$("[data-open-chat]").forEach(el=>el.onclick=()=>openChatWith(el.dataset.openChat));
+
+      $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
+
+      const bindImage=(id,key)=>{
+        const input=$(id); if(!input) return;
+        input.onchange=async e=>{ const f=e.target.files && e.target.files[0]; if(!f) return; state.profile[key]=await fileToDataUrl(f); toast("Ready", key + " saved locally. Press Save."); };
+      };
+      bindImage("#avatarFile","avatar");
+      bindImage("#coverFile","cover");
+      bindImage("#showcase1File","showcase1");
+      bindImage("#showcase2File","showcase2");
+      bindImage("#showcase3File","showcase3");
     }
 
+    async function saveProfile(){
+      const next = {
+        displayName: ($("#profileName").value || "").trim() || state.profile.displayName,
+        mood: ($("#profileMood").value || "").trim() || state.profile.mood,
+        mySpace: ($("#profileMySpace").value || "").trim() || state.profile.mySpace,
+        musicUrl: ($("#profileMusic").value || "").trim(),
+        presence: $("#profilePresence").value || state.profile.presence,
+        avatar: state.profile.avatar || "", cover: state.profile.cover || "",
+        showcase1: state.profile.showcase1 || "", showcase2: state.profile.showcase2 || "", showcase3: state.profile.showcase3 || "",
+        email: state.profile.email || state.email, emailKey: emailKey(state.profile.email || state.email),
+        founder: state.founder,
+        birthday: state.profile.birthday || "",
+        gender: state.profile.gender || "",
+        friendsVisibility: state.profile.friendsVisibility || "public",
+        countryCode: state.profile.countryCode || "SA",
+        countryFlag: state.profile.countryFlag || "🇸🇦",
+        countryName: state.profile.countryName || "Saudi Arabia",
+        showBirthday: !!state.profile.showBirthday,
+        showCountry: !!state.profile.showCountry,
+        notificationsEnabled: !!state.profile.notificationsEnabled,
+        securityKey: state.profile.securityKey || "",
+        blockedUsers: state.profile.blockedUsers || {}
+      };
+      state.profile = { ...state.profile, ...next };
+      await db.ref("profiles/" + state.user.uid).update(next);
+      await db.ref("emails/" + next.emailKey).set(state.user.uid);
+      await setPresence(next.presence);
+      $("#editorModal").classList.remove("open");
+      renderMain(); toast("Saved", "Profile updated");
+    }
 
     auth.onAuthStateChanged(async user=>{
-      if(!user){
-        state.user = null;
-        clearUnsubs();
-        render();
-        return;
-      }
-      state.user = user;
-      state.email = user.email || state.email || localStorage.getItem("echonode_saved_email") || "";
-      if(state.email) localStorage.setItem("echonode_saved_email", state.email);
-      await loadProfile(user.uid);
-      await subscribeAll();
-      bindPresence();
-      renderMain();
+      if(!user){ state.user=null; state.founder=false; clearUnsubs(); renderAuth(); return; }
+      state.user=user; state.email=user.email || state.email;
+      await loadProfile(user.uid); await subscribeAll(); bindPresence(); renderMain();
     });
 
-    function render(){
-      if(state.user) renderMain();
-      else renderAuth();
-    }
-
-    render();
+    renderAuth();
   </script>
+
+<!-- STORE PAGE -->
+<div id="storePage" style="display:none;padding:20px">
+  <h2>Store 🐾</h2>
+  <p>Balance: <span id="pawsBalance">🐾 100</span></p>
+
+  <div>
+    Premium Badge - 20 🐾
+    <button onclick="buyItem('badge',20)">Buy</button>
+  </div>
+
+  <div>
+    Profile Glow - 30 🐾
+    <button onclick="buyItem('glow',30)">Buy</button>
+  </div>
+</div>
+
+<script>
+let paws = 100;
+
+function openStore(){
+  document.getElementById('storePage').style.display='block';
+}
+
+function buyItem(name,price){
+  if(paws>=price){
+    paws -= price;
+    document.getElementById('pawsBalance').innerText='🐾 '+paws;
+    alert('Purchased: '+name);
+  } else {
+    alert('Not enough 🐾');
+  }
+}
+</script>
+
 </body>
 </html>
