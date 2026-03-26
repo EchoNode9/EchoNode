@@ -271,7 +271,7 @@
       border-radius:22px; box-shadow:var(--shadow);
       padding:6px 6px calc(6px + var(--safe-bottom));
     }
-    .nav-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .nav-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
     .nav-btn{
       background:transparent;border:none;color:#838da1;padding:10px 4px;border-radius:16px;
       display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:900;cursor:pointer;
@@ -329,6 +329,19 @@
     .chat-time{font-size:11px;color:var(--muted);margin-top:6px}
     .chat-input-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:45;width:min(430px,calc(100% - 20px));display:flex;align-items:center;gap:10px;padding:10px;border-radius:22px;background:rgba(8,10,16,.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
     .chat-input{flex:1;height:44px;border:none;outline:none;background:transparent;color:#fff;font-size:15px;padding:0 6px}
+
+    
+    .topbar.home-topbar{gap:12px}
+    .topbar-search{flex:1;min-width:0;display:flex;align-items:center;gap:10px;background:#0d1018;border:1px solid var(--line);border-radius:999px;padding:0 14px;height:48px;box-shadow:var(--shadow)}
+    .topbar-search input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:#fff;font-size:16px}
+    .quick-top-btns{display:flex;align-items:center;gap:8px}
+    .nav-btn.create-nav-btn{background:linear-gradient(135deg,rgba(107,22,255,.24),rgba(139,77,255,.18));color:#fff}
+    .nav-btn.create-nav-btn .nav-icon-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 8px 20px rgba(0,0,0,.22)}
+    .nav-btn.create-nav-btn.active{background:linear-gradient(135deg,rgba(107,22,255,.3),rgba(139,77,255,.22))}
+    .create-post-sheet .sheet-title{display:flex;align-items:center;gap:10px}
+    .create-post-sheet .sheet-title .mark{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));font-size:18px}
+    .create-post-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .create-post-actions .file-btn{background:#171d2b}
 
     @media (max-width:640px){ .grid{grid-template-columns:1fr} }
   </style>
@@ -424,7 +437,7 @@
       selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
       unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
       notifiedLikes:{}, notifiedMessages:{},
-      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false, storeOpen:false,
+      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false, storeOpen:false, composeOpen:false,
       profile:{ ...defaultProfile }
     };
 
@@ -894,11 +907,13 @@
 
     async function createPost(){
       const box=$("#composer"); if(!box || !state.user) return;
-      const text=box.value.trim();
+      const title = ($("#postTitleInput")?.value || "").trim();
+      const body = box.value.trim();
+      const text = [title, body].filter(Boolean).join("\n\n").trim();
       const postLink = ($("#postLinkInput")?.value || "").trim();
       const postImage = state.draftPostImage || "";
       if(!text && !postLink && !postImage) return;
-      const targetCommunity = state.currentCommunity === "all" ? "general" : state.currentCommunity;
+      const targetCommunity = ($("#postCommunitySelect")?.value || (state.currentCommunity === "all" ? "general" : state.currentCommunity)).trim();
       const now=Date.now();
       if(now - state.lastPostAt < 1800){ toast("Slow down", "Wait a moment before posting again"); return; }
       state.lastPostAt=now;
@@ -908,8 +923,10 @@
         avatar: state.profile.avatar || "", text:text.slice(0,700), image:postImage, link:postLink, likes:0, likedBy:{}, createdAt:now
       });
       box.value="";
+      if($("#postTitleInput")) $("#postTitleInput").value="";
       if($("#postLinkInput")) $("#postLinkInput").value="";
       resetDraftMedia();
+      state.composeOpen=false;
       renderMain();
       await addXP(5); toast("Posted", "Your update is live");
     }
@@ -1130,27 +1147,22 @@
       const results = homeResults();
       return `
         <div class="page ${state.currentPage==="home"?"active":""}" id="page-home">
-          <div class="topbar">
+          <div class="topbar home-topbar">
             <div class="top-left">
               <button class="icon-btn" id="openSidebarBtn">${icon("menu")}</button>
-              <div>
-                <div class="top-title">Home</div>
-                <div class="top-sub">${state.currentCommunity==="all" ? "Top liked posts across EchoNode" : esc(current.name + " • " + (current.topic || ""))}</div>
-              </div>
             </div>
-            <div class="top-right">
+            <div class="topbar-search">
+              ${icon("search")}
+              <input id="homeSearch" placeholder="Search users or communities" value="${esc(state.searchHome)}">
+            </div>
+            <div class="quick-top-btns">
               <button class="icon-btn" id="noticeBtn">${icon("bell")}</button>
-              <button class="icon-btn" id="openStoreBtn">${icon("paw")}</button>
-              <button class="icon-btn" id="openSettingsBtn">${icon("settings")}</button>
+              <button class="icon-btn" id="openStoreBtn" aria-label="Store">${icon("paw")}</button>
+              <button class="icon-btn" id="openAiBtn" aria-label="Assistant">${icon("ai")}</button>
             </div>
           </div>
 
           <div class="page-body fade">
-            <div class="search-shell">
-              ${icon("search")}
-              <input id="homeSearch" placeholder="Search users or communities" value="${esc(state.searchHome)}">
-            </div>
-
             ${results.length ? `
               <div class="search-results">
                 ${results.map(r=>`
@@ -1160,41 +1172,18 @@
                   </div>
                 `).join("")}
               </div>
-            ` : ``}
-
-            <div class="composer">
-              <div class="compose-wrap">
-                <textarea class="compose" id="composer" placeholder="${state.currentCommunity==="all" ? "Share something in general or switch to a community" : `Share something with ${esc(current.name)}`}"></textarea>
-                <button class="send" id="sendPostBtn">Post</button>
+            ` : `
+              <div class="card">
+                <div class="card-title">${state.currentCommunity==="all" ? "Home feed" : esc(current.name)}</div>
+                <div class="card-sub">${state.currentCommunity==="all" ? "Top liked posts across EchoNode." : esc(current.topic || "Community feed")}</div>
               </div>
-              <div class="row" style="margin-top:10px">
-                <label class="file-btn">Add image<input type="file" id="postImageInput" accept="image/*"></label>
-                <input class="input" id="postLinkInput" placeholder="Paste a link (YouTube or any URL)" value="${esc(state.draftPostLink || "")}" style="margin:0;flex:1;min-width:180px">
-              </div>
-              ${(state.draftPostImage || state.draftPostLink) ? `
-                <div class="card" style="margin-top:10px">
-                  <div class="card-title">Post preview</div>
-                  ${state.draftPostImage ? `<img src="${state.draftPostImage}" alt="" style="width:100%;border-radius:16px;display:block;margin-top:8px">` : ``}
-                  ${state.draftPostLink ? `<div class="card-sub" style="margin-top:8px;word-break:break-all">${esc(state.draftPostLink)}</div>` : ``}
-                </div>
-              ` : ``}
-            </div>
+            `}
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
               <div class="chip">${state.currentCommunity==="all" ? "Top Feed" : "# " + esc(current.name)}</div>
               <div class="chip">${feed.length} posts</div>
               ${state.founder ? `<div class="chip">Founder mode</div>` : ``}
-            </div>
-
-            <div class="grid" style="margin-top:12px">
-              <div class="card" id="homeStoreCard" style="cursor:pointer">
-                <div class="card-title">${icon("paw")} Store</div>
-                <div class="card-sub">Open your upgrades, badges, glow, and future drops.</div>
-              </div>
-              <div class="card" id="homeAssistantCard" style="cursor:pointer">
-                <div class="card-title">${icon("ai")} Assistant & Settings</div>
-                <div class="card-sub">Open settings and quick help from Home.</div>
-              </div>
+              <div class="chip">Tap + to post</div>
             </div>
 
             <div class="section-title">TOP POSTS</div>
@@ -1202,7 +1191,7 @@
               ${feed.length ? feed.map(renderPostCard).join("") : `
                 <div class="card">
                   <div class="card-title">No posts yet</div>
-                  <div class="card-sub">The feed is empty right now. Drop the first post and EchoNode starts moving.</div>
+                  <div class="card-sub">Tap the + button below and drop the first post.</div>
                 </div>
               `}
             </div>
@@ -1476,6 +1465,45 @@
       `;
     }
 
+    function renderCreatePostDrawer(){
+      const communityOptions = Object.entries(state.communities).filter(([id])=>id!=="all");
+      const selectedCommunity = state.currentCommunity==="all" ? "general" : state.currentCommunity;
+      return `
+        <div class="drawer ${state.composeOpen ? "open" : ""}" id="createPostDrawer">
+          <div class="sheet create-post-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <div class="sheet-title"><span class="mark">＋</span> Create post</div>
+              <button class="tool-btn" id="closeCreatePostBtn">Close</button>
+            </div>
+
+            <select class="select input" id="postCommunitySelect">
+              ${communityOptions.map(([id,c])=>`<option value="${id}" ${id===selectedCommunity?"selected":""}># ${esc(c.name)}</option>`).join("")}
+            </select>
+            <input class="input" id="postTitleInput" placeholder="Title" value="">
+            <textarea class="textarea" id="composer" placeholder="Body text (optional)"></textarea>
+
+            <div class="create-post-actions">
+              <label class="file-btn">Add image<input type="file" id="postImageInput" accept="image/*"></label>
+              <input class="input" id="postLinkInput" placeholder="Paste a link (YouTube or any URL)" value="${esc(state.draftPostLink || "")}" style="margin:0;flex:1;min-width:180px">
+            </div>
+
+            ${(state.draftPostImage || state.draftPostLink) ? `
+              <div class="card" style="margin-top:12px">
+                <div class="card-title">Post preview</div>
+                ${state.draftPostImage ? `<img src="${state.draftPostImage}" alt="" style="width:100%;border-radius:16px;display:block;margin-top:8px">` : ``}
+                ${state.draftPostLink ? `<div class="card-sub" style="margin-top:8px;word-break:break-all">${esc(state.draftPostLink)}</div>` : ``}
+              </div>
+            ` : ``}
+
+            <div class="row" style="margin-top:12px">
+              <button class="btn primary" id="sendPostBtn">Post</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderSettingsDrawer(){
       const blocked = Object.keys(state.profile.blockedUsers || {});
       return `
@@ -1680,12 +1708,16 @@
         ${renderSettingsDrawer()}
         ${renderAIDrawer()}
         ${renderStoreDrawer()}
+        ${renderCreatePostDrawer()}
         ${renderCreateCommunityDrawer()}
 
         <div class="bottom-nav" style="display:${state.currentPage === "chat" ? "none" : "block"}">
           <div class="nav-row">
             <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
               ${icon("home")}<span>Home</span>
+            </button>
+            <button class="nav-btn create-nav-btn ${state.composeOpen?"active":""}" id="openCreatePostBtn">
+              <span class="nav-icon-badge">${icon("plus")}</span><span>Create</span>
             </button>
             <button class="nav-btn ${state.currentPage==="base"?"active":""}" data-page="base">
               ${icon("base")}<span>Base</span>
@@ -1734,7 +1766,7 @@
         </div>
       `;
 
-      $$('[data-page]').forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; state.storeOpen=false; renderMain(); });
+      $$('[data-page]').forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; state.storeOpen=false; state.composeOpen=false; renderMain(); });
       $$('.community-item[data-community]').forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$('[data-like-post]').forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
       $$('[data-open-member]').forEach(el=>el.onclick=()=>openMemberProfile(el.dataset.openMember));
@@ -1748,15 +1780,16 @@
       $("#openSidebarBtn") && ($("#openSidebarBtn").onclick=()=>{ state.sidebarOpen=true; renderMain(); });
       $("#closeSidebarBtn") && ($("#closeSidebarBtn").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
       $("#sidebarBackdrop") && ($("#sidebarBackdrop").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
-      $("#openSettingsBtn") && ($("#openSettingsBtn").onclick=()=>{ state.settingsOpen=true; renderMain(); });
-      $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
+            $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
       $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
       $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
       $("#aiDrawer") && ($("#aiDrawer").onclick=e=>{ if(e.target.id==="aiDrawer"){ state.aiOpen=false; renderMain(); } });
       $("#openStoreBtn") && ($("#openStoreBtn").onclick=()=>{ state.storeOpen=true; renderMain(); });
-      $("#homeStoreCard") && ($("#homeStoreCard").onclick=()=>{ state.storeOpen=true; renderMain(); });
-      $("#homeAssistantCard") && ($("#homeAssistantCard").onclick=()=>{ state.settingsOpen=true; renderMain(); });
       $("#settingsAssistantCard") && ($("#settingsAssistantCard").onclick=()=>{ state.aiOpen=true; renderMain(); });
+      $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
+      $("#openCreatePostBtn") && ($("#openCreatePostBtn").onclick=()=>{ state.composeOpen=true; renderMain(); });
+      $("#closeCreatePostBtn") && ($("#closeCreatePostBtn").onclick=()=>{ state.composeOpen=false; renderMain(); });
+      $("#createPostDrawer") && ($("#createPostDrawer").onclick=e=>{ if(e.target.id==="createPostDrawer"){ state.composeOpen=false; renderMain(); } });
       $("#closeStoreBtn") && ($("#closeStoreBtn").onclick=()=>{ state.storeOpen=false; renderMain(); });
       $("#storeDrawer") && ($("#storeDrawer").onclick=e=>{ if(e.target.id==="storeDrawer"){ state.storeOpen=false; renderMain(); } });
       $("#buyBadgeBtn") && ($("#buyBadgeBtn").onclick=()=>buyStoreItem("badge", 20));
@@ -1900,7 +1933,8 @@
           "#closeSettingsBtn",
           "#closeAiBtn",
           "#openStoreBtn",
-          "#homeStoreCard",
+          "#openAiBtn",
+          "#openCreatePostBtn",
           "#homeAssistantCard",
           "#settingsAssistantCard",
           "#closeStoreBtn",
@@ -1963,10 +1997,13 @@
         if(target.id==="openSettingsBtn"){ state.settingsOpen=true; renderMain(); return; }
         if(target.id==="closeSettingsBtn"){ state.settingsOpen=false; renderMain(); return; }
         if(target.id==="closeAiBtn"){ state.aiOpen=false; renderMain(); return; }
-        if(target.id==="openStoreBtn" || target.id==="homeStoreCard"){ state.storeOpen=true; renderMain(); return; }
+        if(target.id==="openStoreBtn"){ state.storeOpen=true; renderMain(); return; }
+        if(target.id==="openAiBtn"){ state.aiOpen=true; renderMain(); return; }
+        if(target.id==="openCreatePostBtn"){ state.composeOpen=true; renderMain(); return; }
         if(target.id==="homeAssistantCard"){ state.settingsOpen=true; renderMain(); return; }
         if(target.id==="settingsAssistantCard"){ state.aiOpen=true; renderMain(); return; }
         if(target.id==="closeStoreBtn"){ state.storeOpen=false; renderMain(); return; }
+        if(target.id==="closeCreatePostBtn"){ state.composeOpen=false; renderMain(); return; }
         if(target.id==="buyBadgeBtn"){ buyStoreItem("badge", 20); return; }
         if(target.id==="buyGlowBtn"){ buyStoreItem("glow", 30); return; }
         if(target.id==="buyPawBtn"){ buyStoreItem("paw", 15); return; }
