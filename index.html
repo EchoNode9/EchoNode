@@ -214,15 +214,44 @@
       display:flex;flex-direction:column;
     }
     .dm-messages{display:grid;gap:10px;flex:1;overflow:auto;padding-right:2px}
-    .message-bubble.self{background:rgba(107,22,255,.15);border-color:rgba(107,22,255,.28)}
+    .message-bubble.self{background:linear-gradient(135deg,rgba(107,22,255,.22),rgba(139,77,255,.18));border-color:rgba(107,22,255,.32)}
     .message-bubble{
-      border-radius:18px;
+      border-radius:24px;
       padding:12px 14px;
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.05);
+      box-shadow:0 10px 24px rgba(0,0,0,.14);
+      animation:msgIn .18s ease;
     }
+    @keyframes msgIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
     .message-bubble .t{font-size:14px;line-height:1.55}
     .message-bubble .m{font-size:11px;color:var(--muted);margin-top:6px}
-    .dm-compose{display:flex;gap:10px;margin-top:12px}
+    .dm-compose{display:flex;gap:10px;margin-top:12px;align-items:center}
+    .chat-bar{
+      flex:1;display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
+      border-radius:22px;padding:8px 10px;
+    }
+    .emoji-btn,.send-icon-btn,.more-menu-btn{
+      width:42px;height:42px;border:none;border-radius:16px;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:#202534;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.14)
+    }
+    .send-icon-btn{background:linear-gradient(135deg,var(--brand),var(--brand2))}
+    .unread-badge{
+      min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;
+      font-size:11px;font-weight:900; margin-left:8px;
+    }
+    .member-menu{
+      position:absolute; right:16px; top:58px; z-index:35;
+      background:#111625; border:1px solid rgba(255,255,255,.06); border-radius:18px;
+      padding:8px; display:grid; gap:6px; min-width:170px; box-shadow:var(--shadow);
+    }
+    .member-menu button{
+      border:none; background:#1a2030; color:#fff; border-radius:14px; height:40px;
+      cursor:pointer; font-weight:800; text-align:left; padding:0 12px;
+    }
 
     .sidebar{
       position:fixed; top:0; left:0; bottom:0; z-index:60;
@@ -348,7 +377,11 @@
         arrow:`<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`,
         edit:`<svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m12 6 4 4"/></svg>`,
         block:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M7 17 17 7"/></svg>`,
-        lock:`<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>`
+        lock:`<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>`,
+        more:`<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg>`,
+        send:`<svg viewBox="0 0 24 24"><path d="M21 3 3 11l7 2 2 7 9-17Z"/></svg>`,
+        smile:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14c1 1.2 2.2 2 3.5 2s2.5-.8 3.5-2"/></svg>`,
+        flag:`<svg viewBox="0 0 24 24"><path d="M5 21V5"/><path d="M5 5c6-2 8 2 14 0v8c-6 2-8-2-14 0"/></svg>`
       };
       return `<span class="icon-s">${icons[name] || ''}</span>`;
     }
@@ -379,6 +412,7 @@
       selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
       unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
       notifiedLikes:{}, notifiedMessages:{},
+      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false,
       profile:{ ...defaultProfile }
     };
 
@@ -570,6 +604,10 @@
                 browserNotify(senderName, latestIncoming.text || "Sent you a message");
               }
               state.notifiedMessages[threadId] = nextSeen;
+              const lastRead = Number(state.lastReadThreads[threadId] || 0);
+              state.unreadCounts[threadId] = incoming.filter(m => Number(m.createdAt || 0) > lastRead).length;
+            } else {
+              state.unreadCounts[threadId] = 0;
             }
           }
         });
@@ -712,7 +750,24 @@
       if(!uid) return;
       state.selectedDmUid = uid;
       state.currentPage = "base";
+      markThreadRead(uid);
       renderMain();
+    }
+    function unreadForUid(uid){
+      const threadId = state.user ? threadIdFor(state.user.uid, uid) : "";
+      return Number(state.unreadCounts[threadId] || 0);
+    }
+    function markThreadRead(uid){
+      if(!state.user || !uid) return;
+      const threadId = threadIdFor(state.user.uid, uid);
+      const thread = state.threads[threadId] || {};
+      const msgs = Object.values(thread.messages || {});
+      const latest = msgs.filter(m => m && m.to === state.user.uid).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).pop();
+      if(latest){
+        state.lastReadThreads[threadId] = Number(latest.createdAt || 0);
+        localStorage.setItem("echonode_last_reads", JSON.stringify(state.lastReadThreads));
+      }
+      state.unreadCounts[threadId] = 0;
     }
     function selectedThreadMessages(){
       if(!state.user || !state.selectedDmUid) return [];
@@ -1040,7 +1095,7 @@
               ${users.slice(0,4).map(u=>`
                 <div class="friend-stack">
                   <div class="friend-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
-                  <div class="friend-name" data-open-chat="${u.uid}">${esc((u.displayName || "User").slice(0,8))}</div>
+                  <div class="friend-name" data-open-chat="${u.uid}">${esc((u.displayName || "User").slice(0,8))}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
                 </div>
               `).join("")}
               <div class="friend-stack" data-page="base">
@@ -1057,8 +1112,8 @@
                     <div class="thread-row">
                       <div class="thread-left">
                         <div class="post-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
-                        <div data-open-chat="${u.uid}" style="cursor:pointer">
-                          <div class="thread-name">${esc(u.displayName || u.email || "User")}</div>
+                        <div data-open-chat="${u.uid}" style="cursor:pointer;flex:1">
+                          <div class="thread-name">${esc(u.displayName || u.email || "User")}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
                           <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
                         </div>
                       </div>
@@ -1086,8 +1141,11 @@
                     <button class="tool-btn" id="blockSelectedBtn">${icon("block")} Block user</button>
                   </div>
                   <div class="dm-compose">
-                    <input class="input" id="dmInput" placeholder="Write a direct message" style="margin:0;flex:1">
-                    <button class="send" id="sendDmBtn">Send</button>
+                    <div class="chat-bar">
+                      <button class="emoji-btn" id="emojiBtn" type="button">${icon("smile")}</button>
+                      <input class="input" id="dmInput" placeholder="Write a direct message" style="margin:0;flex:1;background:transparent;border:none;height:42px;padding:0 6px">
+                    </div>
+                    <button class="send-icon-btn" id="sendDmBtn" type="button">${icon("send")}</button>
                   </div>
                 ` : ``}
               </div>
@@ -1200,7 +1258,17 @@
                 <div class="top-sub">Member profile</div>
               </div>
             </div>
+            <div class="top-right">
+              <button class="icon-btn" id="memberMenuBtn">${icon("more")}</button>
+            </div>
           </div>
+          ${state.memberMenuOpen ? `
+            <div class="member-menu">
+              <button id="memberMenuMessage">${icon("send")} Send Message</button>
+              <button id="memberMenuReport">${icon("flag")} Report user</button>
+              <button id="memberMenuBlock">${icon("block")} Block user</button>
+            </div>
+          ` : ``}
           <div class="page-body fade">
             <div class="profile-hero">
               <div class="cover" style="${p.cover ? `background-image:url('${p.cover}')` : ''}"></div>
@@ -1214,10 +1282,6 @@
                   ${playingLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
-                <div class="row" style="margin-top:10px">
-                  <button class="tool-btn" id="sendMsgFromMemberProfileBtn">${icon("arrow")} Send Message</button>
-                </div>
-
                 <div class="card" style="margin-top:16px">
                   <div class="card-title">${spaceTitle}</div>
                   <div class="card-sub">${esc(p.mySpace || "")}</div>
@@ -1451,10 +1515,10 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
       $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
-      $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.currentPage="memberProfile"; renderMain(); });
+      $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.memberMenuOpen=false; state.currentPage="memberProfile"; renderMain(); });
 
       $$("[data-result-type]").forEach(el=>el.onclick=()=>{
         if(el.dataset.resultType==="community"){ state.currentCommunity=el.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
@@ -1470,7 +1534,11 @@
       $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
       $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
 
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; state.viewingProfileUid=""; renderMain(); });
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberMenuOpen=false; state.currentPage="base"; state.viewingProfileUid=""; renderMain(); });
+      $("#memberMenuBtn") && ($("#memberMenuBtn").onclick=()=>{ state.memberMenuOpen=!state.memberMenuOpen; renderMain(); });
+      $("#memberMenuMessage") && ($("#memberMenuMessage").onclick=()=>{ state.memberMenuOpen=false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); });
+      $("#memberMenuReport") && ($("#memberMenuReport").onclick=()=>{ state.reportUid=state.viewingProfileUid; state.memberMenuOpen=false; toast("Report saved", "This report was saved for review."); });
+      $("#memberMenuBlock") && ($("#memberMenuBlock").onclick=()=>{ state.memberMenuOpen=false; state.selectedDmUid=state.viewingProfileUid; blockSelectedUser(); });
 
       $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
       $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
@@ -1516,6 +1584,7 @@
         };
       }
       $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
+      $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
@@ -1523,7 +1592,6 @@
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
       $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberProfileMode=false; state.currentPage="base"; renderMain(); });
-      $("#memberProfileBlockBtn") && ($("#memberProfileBlockBtn").onclick=()=>{ state.selectedDmUid=state.memberCardUid; blockSelectedUser(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
@@ -1535,9 +1603,6 @@
       $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
       $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
       $$("[data-open-chat]").forEach(el=>el.onclick=()=>openChatWith(el.dataset.openChat));
-      $("#sendMsgFromMemberProfileBtn") && ($("#sendMsgFromMemberProfileBtn").onclick=()=>{
-        if(state.viewingProfileUid) openChatWith(state.viewingProfileUid);
-      });
 
       $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
 
