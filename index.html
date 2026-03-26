@@ -770,100 +770,69 @@
 
     /* 4) CHAT PAGE (SAFE VERSION) */
     function renderChatPage(){
-      try{
-        const user = state.selectedDmUid ? (state.profiles[state.selectedDmUid] || {}) : null;
-        const messages = selectedThreadMessages();
+  const user = state.selectedDmUid ? (state.profiles[state.selectedDmUid] || {}) : null;
+  const messages = selectedThreadMessages();
 
-        return `
-        <div class="page ${state.currentPage==="chat"?"active":""}" id="page-chat">
+  return `
+    <div class="page ${state.currentPage==="chat"?"active":""}" id="page-chat">
+      <div class="topbar">
+        <div class="top-left">
+          <button class="icon-btn" id="chatBackBtn">${icon("arrow")}</button>
 
-          <!-- HEADER -->
-          <div style="display:flex;align-items:center;gap:10px;padding:12px;">
-            <button id="chatBackBtn" style="background:none;border:none;font-size:18px">←</button>
-            <div id="chatOpenProfile" style="display:flex;align-items:center;gap:10px;cursor:pointer">
-              <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;background:#222">
-                ${user?.avatar ? `<img src="${user.avatar}" style="width:100%;height:100%">` : ""}
-              </div>
-              <div style="font-weight:600">
-                ${user?.displayName || user?.email || "Chat"}
-              </div>
+          <div class="member-left" id="chatOpenProfile" style="cursor:pointer">
+            <div class="post-avatar">
+              ${user?.avatar ? `<img src="${user.avatar}" alt="">` : esc(initials(user?.displayName || user?.email || "U"))}
+            </div>
+            <div>
+              <div class="top-title" style="font-size:18px">${esc(user?.displayName || user?.email || "Chat")}</div>
+              <div class="top-sub">Tap to view profile</div>
             </div>
           </div>
-
-          <!-- MESSAGES -->
-          <div style="padding:10px;padding-bottom:90px">
-            ${
-              messages.length
-              ? messages.map(m=>`
-                <div style="
-                  display:flex;
-                  ${m.from===state.user.uid ? "justify-content:flex-end" : "justify-content:flex-start"};
-                  margin-bottom:10px;
-                ">
-                  <div style="
-                    max-width:70%;
-                    padding:10px 14px;
-                    border-radius:18px;
-                    font-size:14px;
-                    ${
-                      m.from===state.user.uid
-                      ? "background:#5b2cff;color:#fff;border-bottom-right-radius:6px"
-                      : "background:#1a1a1a;color:#fff;border-bottom-left-radius:6px"
-                    }
-                  ">
-                    ${m.text || ""}
-                  </div>
-                </div>
-              `).join("")
-              : `<div style="opacity:.6">Start conversation 👋</div>`
-            }
-          </div>
-
-          <!-- INPUT -->
-          <div style="
-            position:fixed;
-            bottom:0;
-            left:0;
-            right:0;
-            padding:10px;
-            background:#0b0b0f;
-            display:flex;
-            gap:8px;
-          ">
-            <button id="emojiBtn" style="
-              width:40px;
-              border:none;
-              background:#1a1a1a;
-              border-radius:50%;
-            ">😊</button>
-            <input id="dmInput"
-              placeholder="Write a message..."
-              style="
-                flex:1;
-                border:none;
-                border-radius:20px;
-                padding:10px;
-                background:#1a1a1a;
-                color:#fff;
-              "
-            >
-            <button id="sendDmBtn" style="
-              width:44px;
-              border:none;
-              border-radius:50%;
-              background:#5b2cff;
-              color:#fff;
-              font-size:16px;
-            ">➤</button>
-          </div>
-
         </div>
-        `;
-      }catch(e){
-        console.error(e);
-        return "";
-      }
-    }
+      </div>
+
+      <div class="page-body chat-page-body fade">
+        <div class="chat-messages" id="chatMessages">
+          ${user ? (
+            messages.length ? messages.map(m=>`
+              <div class="chat-row ${m.from===state.user.uid ? "me" : "them"}">
+                <div class="chat-bubble ${m.from===state.user.uid ? "me" : "them"}">
+                  <div class="chat-text">${esc(m.text || "")}</div>
+                  <div class="chat-time">${esc(timeLabel(m.createdAt))}</div>
+                </div>
+              </div>
+            `).join("") : `
+              <div class="card">
+                <div class="card-sub">Start the first message in this chat.</div>
+              </div>
+            `
+          ) : `
+            <div class="card">
+              <div class="card-sub">No chat selected.</div>
+            </div>
+          `}
+        </div>
+      </div>
+
+      ${user ? `
+        <div class="chat-input-bar">
+          <button class="emoji-btn" id="emojiBtn" type="button">${icon("smile")}</button>
+
+          <input
+            class="chat-input"
+            id="dmInput"
+            placeholder="Write a direct message"
+            autocomplete="off"
+          >
+
+          <button class="send-icon-btn" id="sendDmBtn" type="button">${icon("send")}</button>
+        </div>
+      ` : ``}
+    </div>
+  `;
+}
+        /* Chat UI Styles */
+<!-- Chat UI Styles moved to <style> block -->
     function unreadForUid(uid){
       const threadId = state.user ? threadIdFor(state.user.uid, uid) : "";
       return Number(state.unreadCounts[threadId] || 0);
@@ -1562,6 +1531,25 @@
     }
 
     function renderMain(){
+            // --- Chat UI listeners and nav logic ---
+            $("#chatBackBtn") && ($("#chatBackBtn").onclick=goBackToBase);
+            $("#chatOpenProfile") && ($("#chatOpenProfile").onclick=()=>openMemberProfile(state.selectedDmUid));
+            $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
+            $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{
+              const input=$("#dmInput");
+              if(input){
+                input.value += " 😊";
+                input.focus();
+              }
+            });
+            const bottomNav = document.querySelector(".bottom-nav");
+            if(bottomNav){
+              bottomNav.style.display = state.currentPage === "chat" ? "none" : "";
+            }
+            const chatMessages = document.getElementById("chatMessages");
+            if(chatMessages){
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
       $("#app").innerHTML = `
         ${renderSidebar()}
         ${renderHomePage()}
