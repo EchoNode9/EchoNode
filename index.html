@@ -369,6 +369,7 @@
     const state = {
       authMode:"welcome", accountMode:"signin", otpSent:false, accountExists:false,
       email:"", displayName:"", user:null, currentCommunity:"all", currentPage:"home",
+      draftPostImage:"", draftPostLink:"",
       communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
       selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
       unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
@@ -416,6 +417,16 @@
         if(m) return "https://open.spotify.com/embed/" + k + "/" + m[1];
       }
       return "";
+    }
+
+    function youtubeEmbed(url){
+      url = String(url || "").trim();
+      const a = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+      return a ? `https://www.youtube.com/embed/${a[1]}` : "";
+    }
+    function resetDraftMedia(){
+      state.draftPostImage = "";
+      state.draftPostLink = "";
     }
 
     function timeLabel(ts){ if(!ts) return ""; const d=new Date(ts); return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}); }
@@ -665,7 +676,10 @@
 
     async function createPost(){
       const box=$("#composer"); if(!box || !state.user) return;
-      const text=box.value.trim(); if(!text) return;
+      const text=box.value.trim();
+      const postLink = ($("#postLinkInput")?.value || "").trim();
+      const postImage = state.draftPostImage || "";
+      if(!text && !postLink && !postImage) return;
       const targetCommunity = state.currentCommunity === "all" ? "general" : state.currentCommunity;
       const now=Date.now();
       if(now - state.lastPostAt < 1800){ toast("Slow down", "Wait a moment before posting again"); return; }
@@ -673,9 +687,13 @@
       await db.ref("posts/" + targetCommunity).push({
         uid: state.user.uid, email: state.email,
         name: state.profile.displayName || state.email.split("@")[0],
-        avatar: state.profile.avatar || "", text:text.slice(0,700), likes:0, likedBy:{}, createdAt:now
+        avatar: state.profile.avatar || "", text:text.slice(0,700), image:postImage, link:postLink, likes:0, likedBy:{}, createdAt:now
       });
-      box.value=""; await addXP(5); toast("Posted", "Your update is live");
+      box.value="";
+      if($("#postLinkInput")) $("#postLinkInput").value="";
+      resetDraftMedia();
+      renderMain();
+      await addXP(5); toast("Posted", "Your update is live");
     }
 
     async function likePost(communityId, postId){
@@ -826,6 +844,12 @@
     function renderPostCard(p){
       const liked=!!((p.likedBy || {})[state.user.uid]);
       const c=state.communities[p.communityId] || {name:p.communityId || "community"};
+      const yt = youtubeEmbed(p.link || "");
+      const mediaBlock = p.image
+        ? `<div style="margin-top:12px"><img src="${p.image}" alt="" style="width:100%;border-radius:18px;display:block;border:1px solid rgba(255,255,255,.05)"></div>`
+        : yt
+          ? `<div style="margin-top:12px"><iframe src="${yt}" style="width:100%;height:220px;border:none;border-radius:18px;background:#0d1018" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+          : (p.link ? `<div style="margin-top:12px" class="card"><div class="card-title">Shared link</div><div class="card-sub"><a href="${p.link}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.link)}</a></div></div>` : ``);
       return `
         <div class="post-item">
           <div class="post-head">
@@ -838,7 +862,8 @@
             </div>
             <div class="chip">${esc(c.name)}</div>
           </div>
-          <div class="post-text">${esc(p.text || "")}</div>
+          ${p.text ? `<div class="post-text">${esc(p.text || "")}</div>` : ``}
+          ${mediaBlock}
           <div class="post-actions">
             <button class="pill-action ${liked ? "active" : ""}" data-like-community="${p.communityId}" data-like-post="${p.id}">♡ ${p.likes || 0}</button>
             <div class="chip">${(p.likes || 0) > 0 ? "Hot" : "Fresh"}</div>
@@ -889,6 +914,17 @@
                 <textarea class="compose" id="composer" placeholder="${state.currentCommunity==="all" ? "Share something in general or switch to a community" : `Share something with ${esc(current.name)}`}"></textarea>
                 <button class="send" id="sendPostBtn">Post</button>
               </div>
+              <div class="row" style="margin-top:10px">
+                <label class="file-btn">Add image<input type="file" id="postImageInput" accept="image/*"></label>
+                <input class="input" id="postLinkInput" placeholder="Paste a link (YouTube or any URL)" value="${esc(state.draftPostLink || "")}" style="margin:0;flex:1;min-width:180px">
+              </div>
+              ${(state.draftPostImage || state.draftPostLink) ? `
+                <div class="card" style="margin-top:10px">
+                  <div class="card-title">Post preview</div>
+                  ${state.draftPostImage ? `<img src="${state.draftPostImage}" alt="" style="width:100%;border-radius:16px;display:block;margin-top:8px">` : ``}
+                  ${state.draftPostLink ? `<div class="card-sub" style="margin-top:8px;word-break:break-all">${esc(state.draftPostLink)}</div>` : ``}
+                </div>
+              ` : ``}
             </div>
 
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
@@ -993,22 +1029,13 @@
     }
 
     function renderProfilePage(){
-      const p=state.profile, avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
-      let musicCard=`<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from Edit Profile.</div>`;
-      const sp=spotifyEmbed(p.musicUrl);
-      if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
-      else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
-      else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
-      const pct=progressPercent(p.xp||0,p.level||1), friends=friendCandidates().slice(0,4);
-      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
-      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
-
-      return `
+      const viewedProfile = state.memberProfileMode && state.memberCardUid ? (state.profiles[state.memberCardUid] || state.profile) : state.profile;
+      const p=viewedProfile,return `
         <div class="page ${state.currentPage==="profile"?"active":""}" id="page-profile">
           <div class="topbar">
             <div>
               <div class="top-title">Profile</div>
-              <div class="top-sub">Your EchoNode identity</div>
+              <div class="top-sub">${state.memberProfileMode ? "Public member profile" : "Your EchoNode identity"}</div>
             </div>
           </div>
 
@@ -1022,7 +1049,7 @@
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
-                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
+                  ${state.memberProfileMode ? `<button class="tiny-edit" id="backToBaseBtn">${icon("arrow")}</button>` : `<button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>`}
                   ${state.founder ? `<span class="badge">Founder</span>` : ``}
                   ${birthdayLine}
                 </div>
@@ -1032,8 +1059,9 @@
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
                 </div>
 
+                ${state.memberProfileMode ? `<div class="row" style="margin-top:16px"><button class="btn secondary" id="memberProfileBlockBtn">${icon("block")} Block user</button></div>` : ``}
                 <div class="card" style="margin-top:16px">
-                  <div class="card-title">My Space</div>
+                  <div class="card-title">${state.memberProfileMode ? ((p.gender==="female") ? "Her Space" : (p.gender==="male" ? "His Space" : "Their Space")) : "My Space"}</div>
                   <div class="card-sub">${esc(p.mySpace || "")}</div>
                 </div>
 
@@ -1065,6 +1093,7 @@
         </div>
       `;
     }
+
 
     function renderMemberProfilePage(){
       const uid = state.viewingProfileUid;
@@ -1342,7 +1371,7 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
       $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
       $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.currentPage="memberProfile"; renderMain(); });
@@ -1389,6 +1418,17 @@
 
       $("#sendPostBtn") && ($("#sendPostBtn").onclick=createPost);
       $("#composer") && ($("#composer").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); createPost(); } }));
+      $("#postLinkInput") && ($("#postLinkInput").addEventListener("input", e=>{ state.draftPostLink=e.target.value; }));
+      const postImageInput = $("#postImageInput");
+      if(postImageInput){
+        postImageInput.onchange = async e => {
+          const f = e.target.files && e.target.files[0];
+          if(!f) return;
+          state.draftPostImage = await fileToDataUrl(f);
+          renderMain();
+          toast("Image ready", "Your post image is attached");
+        };
+      }
       $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
@@ -1396,7 +1436,8 @@
 
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; renderMain(); });
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberProfileMode=false; state.currentPage="base"; renderMain(); });
+      $("#memberProfileBlockBtn") && ($("#memberProfileBlockBtn").onclick=()=>{ state.selectedDmUid=state.memberCardUid; blockSelectedUser(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
