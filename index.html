@@ -371,7 +371,7 @@
       email:"", displayName:"", user:null, currentCommunity:"all", currentPage:"home",
       communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
       selectedDmUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
-      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
+      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"", viewProfileUid:"",
       profile:{ ...defaultProfile }
     };
 
@@ -929,7 +929,7 @@
             <div class="section-title">FRIENDS</div>
             <div class="friends-strip">
               ${users.slice(0,4).map(u=>`
-                <div class="friend-stack" data-select-dm="${u.uid}">
+                <div class="friend-stack" data-open-profile="${u.uid}">
                   <div class="friend-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                   <div class="friend-name">${esc((u.displayName || "User").slice(0,8))}</div>
                 </div>
@@ -947,7 +947,7 @@
                   <div class="thread-item" data-select-dm="${u.uid}">
                     <div class="thread-row">
                       <div class="thread-left">
-                        <div class="post-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                        <div class="post-avatar" data-open-profile="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                         <div>
                           <div class="thread-name">${esc(u.displayName || u.email || "User")}</div>
                           <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
@@ -988,8 +988,12 @@
       `;
     }
 
+    
     function renderProfilePage(){
-      const p=state.profile, avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || state.email));
+      const viewingOther = !!state.viewProfileUid;
+      const otherProfile = viewingOther ? (state.profiles[state.viewProfileUid] || {}) : {};
+      const p = viewingOther ? { ...defaultProfile, ...otherProfile } : state.profile;
+      const avatarInner=p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || state.email));
       let musicCard=`<div class="card-title">Music</div><div class="card-sub">Add Spotify, MP3, or a direct link from Edit Profile.</div>`;
       const sp=spotifyEmbed(p.musicUrl);
       if(p.musicUrl && sp) musicCard=`<div class="card-title">Music</div><iframe class="music-embed" src="${sp}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
@@ -1004,8 +1008,9 @@
           <div class="topbar">
             <div>
               <div class="top-title">Profile</div>
-              <div class="top-sub">Your EchoNode identity</div>
+              <div class="top-sub">${viewingOther ? "Member profile" : "Your EchoNode identity"}</div>
             </div>
+            ${viewingOther ? `<button class="tool-btn" id="backToBaseBtn">Back to Base</button>` : ``}
           </div>
 
           <div class="page-body fade">
@@ -1014,12 +1019,12 @@
               <div class="profile-body">
                 <div class="avatar-big">${avatarInner}</div>
                 <div class="name-line">
-                  <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
+                  <div class="name">${esc(p.displayName || p.email?.split("@")[0] || "User")}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
-                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
-                  ${state.founder ? `<span class="badge">Founder</span>` : ``}
+                  ${!viewingOther ? `<button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>` : ``}
+                  ${p.founder ? `<span class="badge">Founder</span>` : ``}
                   ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
@@ -1045,7 +1050,7 @@
                 <div class="section-title">FRIENDS</div>
                 <div class="friends-strip">
                   ${friends.map(f=>`
-                    <div class="friend-stack" data-select-dm="${f.uid}">
+                    <div class="friend-stack" data-open-profile="${f.uid}">
                       <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || f.email || "U"))}</div>
                       <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
                     </div>
@@ -1062,6 +1067,7 @@
       `;
     }
 
+    
     function renderSettingsDrawer(){
       const blocked = Object.keys(state.profile.blockedUsers || {});
       return `
@@ -1256,10 +1262,11 @@
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
+      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; if(btn.dataset.page==="profile"){ state.viewProfileUid=""; } state.settingsOpen=false; state.aiOpen=false; renderMain(); });
       $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
       $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
       $$("[data-select-dm]").forEach(el=>el.onclick=()=>{ state.selectedDmUid=el.dataset.selectDm; state.currentPage="base"; renderMain(); });
+      $$("[data-open-profile]").forEach(el=>el.onclick=(e)=>{ e.stopPropagation(); state.viewProfileUid=el.dataset.openProfile; state.currentPage="profile"; renderMain(); });
 
       $$("[data-result-type]").forEach(el=>el.onclick=()=>{
         if(el.dataset.resultType==="community"){ state.currentCommunity=el.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
@@ -1306,8 +1313,8 @@
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
 
-      $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.currentPage="base"; state.viewProfileUid=""; renderMain(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
