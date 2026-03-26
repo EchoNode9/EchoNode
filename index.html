@@ -747,12 +747,25 @@
     }
     function threadIdFor(a,b){ return [a,b].sort().join("__"); }
     function openChatWith(uid){
-      if(!uid) return;
-      state.selectedDmUid = uid;
-      state.currentPage = "base";
-      markThreadRead(uid);
-      renderMain();
-    }
+  if(!uid) return;
+  state.selectedDmUid = uid;
+  state.currentPage = "chat";
+  markThreadRead(uid);
+  renderMain();
+}
+function goBackToBase(){
+  state.currentPage = "base";
+  renderMain();
+}
+
+function openMemberProfile(uid){
+  if(!uid) return;
+  state.viewingProfileUid = uid;
+  state.memberMenuOpen = false;
+  state.currentPage = "memberProfile";
+  renderMain();
+}
+
     function unreadForUid(uid){
       const threadId = state.user ? threadIdFor(state.user.uid, uid) : "";
       return Number(state.unreadCounts[threadId] || 0);
@@ -1184,17 +1197,10 @@
                   <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
-                  <span class="badge">Lv ${esc(p.level || 1)}</span>
-                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
-                  ${state.founder ? `<span class="badge">Founder</span>` : ``}
                   ${birthdayLine}
+                  ${playingLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
-                <div class="xp-box">
-                  XP: ${esc(p.xp || 0)} ⭐
-                  <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
-                </div>
-
                 <div class="card" style="margin-top:16px">
                   <div class="card-title">My Space</div>
                   <div class="card-sub">${esc(p.mySpace || "")}</div>
@@ -1212,7 +1218,7 @@
                 <div class="section-title">FRIENDS</div>
                 <div class="friends-strip">
                   ${friends.map(f=>`
-                    <div class="friend-stack" data-open-member="${f.uid}">
+                    <div class="friend-stack">
                       <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || f.email || "U"))}</div>
                       <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
                     </div>
