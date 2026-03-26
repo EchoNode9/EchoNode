@@ -320,62 +320,17 @@
       background:linear-gradient(135deg,#7b35ff,#9f6dff);color:#fff;font-size:24px;box-shadow:var(--shadow)
     }
 
+    .chat-page-body{padding-bottom:calc(110px + var(--safe-bottom))}
+    .chat-messages{display:grid;gap:12px;min-height:calc(100vh - 220px);padding-bottom:14px}
+    .chat-row{display:flex}.chat-row.me{justify-content:flex-end}.chat-row.them{justify-content:flex-start}
+    .chat-bubble{max-width:min(82%,360px);padding:12px 14px;border-radius:22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);box-shadow:0 10px 24px rgba(0,0,0,.14)}
+    .chat-bubble.me{background:linear-gradient(135deg,rgba(107,22,255,.26),rgba(139,77,255,.2));border-color:rgba(107,22,255,.3)}
+    .chat-text{font-size:15px;line-height:1.55;color:#eef2ff;white-space:pre-wrap;word-break:break-word}
+    .chat-time{font-size:11px;color:var(--muted);margin-top:6px}
+    .chat-input-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:45;width:min(430px,calc(100% - 20px));display:flex;align-items:center;gap:10px;padding:10px;border-radius:22px;background:rgba(8,10,16,.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
+    .chat-input{flex:1;height:44px;border:none;outline:none;background:transparent;color:#fff;font-size:15px;padding:0 6px}
+
     @media (max-width:640px){ .grid{grid-template-columns:1fr} }
-    
-    .chat-input-bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 45;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px calc(10px + var(--safe-bottom));
-      background: rgba(9,11,17,.94);
-      backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(255,255,255,.05);
-    }
-    .chat-messages {
-      padding-bottom: 110px !important;
-    }
-    .chat-row {
-      display: flex;
-      margin: 8px 0;
-    }
-    .chat-row.me {
-      justify-content: flex-end;
-    }
-    .chat-bubble {
-      max-width: 70%;
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(107,22,255,.18);
-      border: 1px solid rgba(107,22,255,.32);
-    }
-    .chat-row.them .chat-bubble {
-      background: rgba(255,255,255,.05);
-      border-color: rgba(255,255,255,.05);
-    }
-    .chat-text {
-      font-size: 14px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .chat-time {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-    .chat-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #fff;
-      font-size: 14px;
-      font-family: inherit;
-    }
   </style>
 </head>
 <body>
@@ -436,7 +391,8 @@
         more:`<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/></svg>`,
         send:`<svg viewBox="0 0 24 24"><path d="M21 3 3 11l7 2 2 7 9-17Z"/></svg>`,
         smile:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14c1 1.2 2.2 2 3.5 2s2.5-.8 3.5-2"/></svg>`,
-        flag:`<svg viewBox="0 0 24 24"><path d="M5 21V5"/><path d="M5 5c6-2 8 2 14 0v8c-6 2-8-2-14 0"/></svg>`
+        flag:`<svg viewBox="0 0 24 24"><path d="M5 21V5"/><path d="M5 5c6-2 8 2 14 0v8c-6 2-8-2-14 0"/></svg>`,
+        game:`<svg viewBox="0 0 24 24"><path d="M6 12h3m-1.5-1.5v3M15.5 11h.01M18.5 13h.01"/><path d="M7 8h10a4 4 0 0 1 4 4v2a3 3 0 0 1-5.2 2.1L14 14H10l-1.8 2.1A3 3 0 0 1 3 14v-2a4 4 0 0 1 4-4Z"/></svg>`
       };
       return `<span class="icon-s">${icons[name] || ''}</span>`;
     }
@@ -456,7 +412,7 @@
       mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
       musicUrl:"", presence:"online", gender:"", friendsVisibility:"public", showcase1:"", showcase2:"", showcase3:"",
       founder:false, countryCode:"SA", countryFlag:"🇸🇦", countryName:"Saudi Arabia",
-      birthday:"", blockedUsers:{}, securityKey:"", ...defaultPrivacy
+      birthday:"", blockedUsers:{}, securityKey:"", paws:100, premiumBadge:false, profileGlow:false, ...defaultPrivacy
     };
 
     const state = {
@@ -467,7 +423,7 @@
       selectedDmUid:"", viewingProfileUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
       unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
       notifiedLikes:{}, notifiedMessages:{},
-      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false,
+      unreadCounts:{}, lastReadThreads: JSON.parse(localStorage.getItem("echonode_last_reads") || "{}"), reportUid:"", memberMenuOpen:false, storeOpen:false,
       profile:{ ...defaultProfile }
     };
 
@@ -1024,7 +980,10 @@
         countryName: state.profile.countryName,
         showBirthday: !!state.profile.showBirthday,
         showCountry: !!state.profile.showCountry,
-        notificationsEnabled: !!state.profile.notificationsEnabled
+        notificationsEnabled: !!state.profile.notificationsEnabled,
+        paws: Number(state.profile.paws || 0),
+        premiumBadge: !!state.profile.premiumBadge,
+        profileGlow: !!state.profile.profileGlow
       });
       await db.ref("emails/" + emailKey(state.profile.email)).set(state.user.uid);
       state.settingsOpen = false;
@@ -1056,6 +1015,32 @@
       delete blocked[uid];
       state.profile.blockedUsers = blocked;
       await db.ref("profiles/" + state.user.uid + "/blockedUsers").set(blocked);
+      renderMain();
+    }
+
+    async function reportMember(uid){
+      if(!state.user || !uid) return;
+      const payload = {
+        reporterUid: state.user.uid,
+        reporterName: state.profile.displayName || state.email.split("@")[0] || "User",
+        targetUid: uid,
+        targetName: (state.profiles[uid] || {}).displayName || (state.profiles[uid] || {}).email || uid,
+        createdAt: Date.now()
+      };
+      await db.ref("reports").push(payload);
+      toast("Report saved", "This member was flagged for review.");
+    }
+
+    async function buyStoreItem(type, price){
+      if(!state.user) return;
+      const paws = Number(state.profile.paws || 0);
+      if(paws < price) return toast("Not enough paws", `You need ${price - paws} more 🐾.`);
+      const updates = { paws: paws - price };
+      if(type === "badge") updates.premiumBadge = true;
+      if(type === "glow") updates.profileGlow = true;
+      state.profile = { ...state.profile, ...updates };
+      await db.ref("profiles/" + state.user.uid).update(updates);
+      toast("Purchased", type === "badge" ? "Premium Badge unlocked." : "Profile Glow unlocked.");
       renderMain();
     }
 
@@ -1319,12 +1304,17 @@
                   <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
+                  <span class="badge">Lv ${esc(p.level || 1)}</span>
+                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
+                  <button class="tool-btn" id="openStoreBtn" style="height:34px;padding:0 12px">Store 🐾</button>
+                  ${state.founder ? `<span class="badge">Founder</span>` : ``}
+                  ${p.premiumBadge ? `<span class="badge">Premium</span>` : ``}
+                  ${p.profileGlow ? `<span class="badge">Glow</span>` : ``}
                   ${birthdayLine}
-                  ${playingLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
                 <div class="xp-box">
-                  XP: ${esc(p.xp || 0)} ⭐
+                  XP: ${esc(p.xp || 0)} ⭐ • 🐾 ${esc(p.paws || 0)}
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
                 </div>
 
@@ -1345,8 +1335,8 @@
                 <div class="section-title">FRIENDS</div>
                 <div class="friends-strip">
                   ${friends.map(f=>`
-                    <div class="friend-stack">
-                      <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || "U"))}</div>
+                    <div class="friend-stack" data-open-member="${f.uid}">
+                      <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || f.email || "U"))}</div>
                       <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
                     </div>
                   `).join("")}
@@ -1563,6 +1553,40 @@
       `;
     }
 
+    function renderStoreDrawer(){
+      return `
+        <div class="drawer ${state.storeOpen ? "open" : ""}" id="storeDrawer">
+          <div class="sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <div class="sheet-title">Store</div>
+              <button class="tool-btn" id="closeStoreBtn">Close</button>
+            </div>
+            <div class="card">
+              <div class="card-title">Your balance</div>
+              <div class="card-sub">🐾 ${esc(state.profile.paws || 0)} available for upgrades.</div>
+            </div>
+            <div class="grid" style="margin-top:12px">
+              <div class="card">
+                <div class="card-title">Premium Badge</div>
+                <div class="card-sub">Show a premium badge on your profile.</div>
+                <div class="row" style="margin-top:10px">
+                  <button class="btn primary" id="buyBadgeBtn" ${state.profile.premiumBadge ? 'disabled style="opacity:.6"' : ''}>${state.profile.premiumBadge ? 'Owned' : 'Buy • 20 🐾'}</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">Profile Glow</div>
+                <div class="card-sub">Unlock a glow status on your profile.</div>
+                <div class="row" style="margin-top:10px">
+                  <button class="btn primary" id="buyGlowBtn" ${state.profile.profileGlow ? 'disabled style="opacity:.6"' : ''}>${state.profile.profileGlow ? 'Owned' : 'Buy • 30 🐾'}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function renderCreateCommunityDrawer(){
       return `
         <div class="drawer ${state.createCommunityOpen ? "open" : ""}" id="createCommunityDrawer">
@@ -1583,47 +1607,7 @@
       `;
     }
 
-function renderMain(){
-        // --- Chat UI listeners and nav logic ---
-        bindChatEvents();
-      // --- Chat event binding ---
-      function bindChatEvents() {
-        // Send button
-        const sendBtn = document.getElementById("sendDmBtn");
-        if(sendBtn) sendBtn.onclick = sendDM;
-        // Enter key
-        const dmInput = document.getElementById("dmInput");
-        if(dmInput) {
-          dmInput.onkeydown = function(e) {
-            if(e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              sendDM();
-            }
-          };
-        }
-        // Emoji button
-        const emojiBtn = document.getElementById("emojiBtn");
-        if(emojiBtn) emojiBtn.onclick = function() {
-          if(dmInput) {
-            dmInput.value += " 😊";
-            dmInput.focus();
-          }
-        };
-        // Back button
-        const backBtn = document.getElementById("chatBackBtn");
-        if(backBtn) backBtn.onclick = goBackToBase;
-        // Open profile
-        const openProfile = document.getElementById("chatOpenProfile");
-        if(openProfile) openProfile.onclick = function() {
-          if(state.selectedDmUid) openMemberProfile(state.selectedDmUid);
-        };
-        // Hide bottom nav in chat
-        const bottomNav = document.querySelector(".bottom-nav");
-        if(bottomNav) bottomNav.style.display = state.currentPage === "chat" ? "none" : "";
-        // Scroll chat to bottom
-        const chatMessages = document.getElementById("chatMessages");
-        if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
+    function renderMain(){
       $("#app").innerHTML = `
         ${renderSidebar()}
         ${renderHomePage()}
@@ -1633,9 +1617,10 @@ function renderMain(){
         ${renderMemberProfilePage()}
         ${renderSettingsDrawer()}
         ${renderAIDrawer()}
+        ${renderStoreDrawer()}
         ${renderCreateCommunityDrawer()}
 
-        <div class="bottom-nav">
+        <div class="bottom-nav" style="display:${state.currentPage === "chat" ? "none" : "block"}">
           <div class="nav-row">
             <button class="nav-btn ${state.currentPage==="home"?"active":""}" data-page="home">
               ${icon("home")}<span>Home</span>
@@ -1689,12 +1674,12 @@ function renderMain(){
         </div>
       `;
 
-      $$("[data-page]").forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberProfileMode=false; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; renderMain(); });
-      $$(".community-item[data-community]").forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
-      $$("[data-like-post]").forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
-      $$("[data-open-member]").forEach(el=>el.onclick=()=>{ state.viewingProfileUid=el.dataset.openMember; state.memberMenuOpen=false; state.currentPage="memberProfile"; renderMain(); });
-
-      $$("[data-result-type]").forEach(el=>el.onclick=()=>{
+      $$('[data-page]').forEach(btn=>btn.onclick=()=>{ state.currentPage=btn.dataset.page; state.memberMenuOpen=false; state.settingsOpen=false; state.aiOpen=false; state.storeOpen=false; renderMain(); });
+      $$('.community-item[data-community]').forEach(card=>card.onclick=()=>{ state.currentCommunity=card.dataset.community; state.currentPage="home"; state.sidebarOpen=false; renderMain(); });
+      $$('[data-like-post]').forEach(btn=>btn.onclick=()=>likePost(btn.dataset.likeCommunity, btn.dataset.likePost));
+      $$('[data-open-member]').forEach(el=>el.onclick=()=>openMemberProfile(el.dataset.openMember));
+      $$('[data-open-chat]').forEach(el=>el.onclick=()=>openChatWith(el.dataset.openChat));
+      $$('[data-result-type]').forEach(el=>el.onclick=()=>{
         if(el.dataset.resultType==="community"){ state.currentCommunity=el.dataset.resultId; state.currentPage="home"; state.searchHome=""; }
         else { state.viewingProfileUid=el.dataset.resultId; state.currentPage="memberProfile"; state.searchHome=""; }
         renderMain();
@@ -1703,27 +1688,29 @@ function renderMain(){
       $("#openSidebarBtn") && ($("#openSidebarBtn").onclick=()=>{ state.sidebarOpen=true; renderMain(); });
       $("#closeSidebarBtn") && ($("#closeSidebarBtn").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
       $("#sidebarBackdrop") && ($("#sidebarBackdrop").onclick=()=>{ state.sidebarOpen=false; renderMain(); });
-
       $("#openSettingsBtn") && ($("#openSettingsBtn").onclick=()=>{ state.settingsOpen=true; renderMain(); });
       $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
       $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
-
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberMenuOpen=false; state.currentPage="base"; state.viewingProfileUid=""; renderMain(); });
-      $("#memberMenuBtn") && ($("#memberMenuBtn").onclick=()=>{ state.memberMenuOpen=!state.memberMenuOpen; renderMain(); });
-      $("#memberMenuMessage") && ($("#memberMenuMessage").onclick=()=>{ state.memberMenuOpen=false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); });
-      $("#memberMenuReport") && ($("#memberMenuReport").onclick=()=>{ state.reportUid=state.viewingProfileUid; state.memberMenuOpen=false; toast("Report saved", "This report was saved for review."); });
-      $("#memberMenuBlock") && ($("#memberMenuBlock").onclick=()=>{ state.memberMenuOpen=false; state.selectedDmUid=state.viewingProfileUid; blockSelectedUser(); });
-
       $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
       $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
       $("#aiDrawer") && ($("#aiDrawer").onclick=e=>{ if(e.target.id==="aiDrawer"){ state.aiOpen=false; renderMain(); } });
-
+      $("#openStoreBtn") && ($("#openStoreBtn").onclick=()=>{ state.storeOpen=true; renderMain(); });
+      $("#closeStoreBtn") && ($("#closeStoreBtn").onclick=()=>{ state.storeOpen=false; renderMain(); });
+      $("#storeDrawer") && ($("#storeDrawer").onclick=e=>{ if(e.target.id==="storeDrawer"){ state.storeOpen=false; renderMain(); } });
+      $("#buyBadgeBtn") && ($("#buyBadgeBtn").onclick=()=>buyStoreItem("badge", 20));
+      $("#buyGlowBtn") && ($("#buyGlowBtn").onclick=()=>buyStoreItem("glow", 30));
       $("#openCreateCommunityBtn") && ($("#openCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=true; renderMain(); });
       $("#closeCreateCommunityBtn") && ($("#closeCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=false; renderMain(); });
       $("#createCommunityDrawer") && ($("#createCommunityDrawer").onclick=e=>{ if(e.target.id==="createCommunityDrawer"){ state.createCommunityOpen=false; renderMain(); } });
       $("#createCommunityBtn") && ($("#createCommunityBtn").onclick=createCommunity);
 
-      $$("[data-ai]").forEach(btn=>btn.onclick=()=>{
+      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberMenuOpen=false; goBackToBase(); state.viewingProfileUid=""; });
+      $("#memberMenuBtn") && ($("#memberMenuBtn").onclick=()=>{ state.memberMenuOpen=!state.memberMenuOpen; renderMain(); });
+      $("#memberMenuMessage") && ($("#memberMenuMessage").onclick=()=>{ state.memberMenuOpen=false; if(state.viewingProfileUid) openChatWith(state.viewingProfileUid); });
+      $("#memberMenuReport") && ($("#memberMenuReport").onclick=async ()=>{ state.memberMenuOpen=false; await reportMember(state.viewingProfileUid); });
+      $("#memberMenuBlock") && ($("#memberMenuBlock").onclick=()=>{ state.memberMenuOpen=false; state.selectedDmUid=state.viewingProfileUid; blockSelectedUser(); });
+
+      $$('[data-ai]').forEach(btn=>btn.onclick=()=>{
         const answer=$("#aiAnswerCard");
         const map={
           profile:"Use Edit Profile to change mood, music, cover, profile picture, and the 3 Showcase slots.",
@@ -1739,9 +1726,7 @@ function renderMain(){
         if(granted){
           toast("Notifications enabled", "You will get real browser alerts for DMs and likes.");
           browserNotify("EchoNode notifications are on", "DMs and likes will now reach you.");
-        } else {
-          toast("Notifications", "Browser permission is off or blocked.");
-        }
+        } else toast("Notifications", "Browser permission is off or blocked.");
       });
 
       $("#sendPostBtn") && ($("#sendPostBtn").onclick=createPost);
@@ -1757,30 +1742,26 @@ function renderMain(){
           toast("Image ready", "Your post image is attached");
         };
       }
+
       $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
       $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
-
       $("#chatBackBtn") && ($("#chatBackBtn").onclick=goBackToBase);
       $("#chatOpenProfile") && ($("#chatOpenProfile").onclick=()=>{ if(state.selectedDmUid) openMemberProfile(state.selectedDmUid); });
 
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
       $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
-      $("#backToBaseBtn") && ($("#backToBaseBtn").onclick=()=>{ state.memberProfileMode=false; state.currentPage="base"; renderMain(); });
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
-
       $("#saveSettingsBtn") && ($("#saveSettingsBtn").onclick=saveSettings);
       $("#toggleBirthday") && ($("#toggleBirthday").onclick=()=>toggleProfileFlag("showBirthday"));
       $("#toggleCountry") && ($("#toggleCountry").onclick=()=>toggleProfileFlag("showCountry"));
       $("#toggleNotifications") && ($("#toggleNotifications").onclick=()=>toggleProfileFlag("notificationsEnabled"));
-      $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
+      $$('[data-unblock]').forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
       $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
-      $$("[data-open-chat]").forEach(el=>el.onclick=()=>openChatWith(el.dataset.openChat));
-
       $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
 
       const bindImage=(id,key)=>{
@@ -1792,6 +1773,9 @@ function renderMain(){
       bindImage("#showcase1File","showcase1");
       bindImage("#showcase2File","showcase2");
       bindImage("#showcase3File","showcase3");
+
+      const chatMessages = document.getElementById("chatMessages");
+      if(chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     async function saveProfile(){
@@ -1815,7 +1799,10 @@ function renderMain(){
         showCountry: !!state.profile.showCountry,
         notificationsEnabled: !!state.profile.notificationsEnabled,
         securityKey: state.profile.securityKey || "",
-        blockedUsers: state.profile.blockedUsers || {}
+        blockedUsers: state.profile.blockedUsers || {},
+        paws: Number(state.profile.paws || 0),
+        premiumBadge: !!state.profile.premiumBadge,
+        profileGlow: !!state.profile.profileGlow
       };
       state.profile = { ...state.profile, ...next };
       await db.ref("profiles/" + state.user.uid).update(next);
@@ -1833,40 +1820,6 @@ function renderMain(){
 
     renderAuth();
   </script>
-
-<!-- STORE PAGE -->
-<div id="storePage" style="display:none;padding:20px">
-  <h2>Store 🐾</h2>
-  <p>Balance: <span id="pawsBalance">🐾 100</span></p>
-
-  <div>
-    Premium Badge - 20 🐾
-    <button onclick="buyItem('badge',20)">Buy</button>
-  </div>
-
-  <div>
-    Profile Glow - 30 🐾
-    <button onclick="buyItem('glow',30)">Buy</button>
-  </div>
-</div>
-
-<script>
-let paws = 100;
-
-function openStore(){
-  document.getElementById('storePage').style.display='block';
-}
-
-function buyItem(name,price){
-  if(paws>=price){
-    paws -= price;
-    document.getElementById('pawsBalance').innerText='🐾 '+paws;
-    alert('Purchased: '+name);
-  } else {
-    alert('Not enough 🐾');
-  }
-}
-</script>
 
 </body>
 </html>
