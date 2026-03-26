@@ -492,16 +492,11 @@
         if(!d.token) return setStatus("Invalid or expired code");
 
         setStatus("Signing into Firebase...");
-
-try {
-  const result = await auth.signInWithCustomToken(d.token);
-  console.log("SUCCESS LOGIN:", result);
-  setStatus("دخلت 🔥", true);
-} catch (err) {
-  console.error("Firebase ERROR:", err);
-  setStatus("ERROR: " + (err.code || err.message));
-}
-
+        const timeout = new Promise((_, reject)=>setTimeout(()=>reject(new Error("Firebase timeout")),10000));
+        await Promise.race([auth.signInWithCustomToken(d.token), timeout]);
+      }catch(err){
+        setStatus("Error: " + err.message);
+      }
     }
 
     async function createPost(){
