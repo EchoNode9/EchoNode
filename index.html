@@ -327,8 +327,11 @@
     .chat-bubble.me{background:linear-gradient(135deg,rgba(107,22,255,.26),rgba(139,77,255,.2));border-color:rgba(107,22,255,.3)}
     .chat-text{font-size:15px;line-height:1.55;color:#eef2ff;white-space:pre-wrap;word-break:break-word}
     .chat-time{font-size:11px;color:var(--muted);margin-top:6px}
-    .chat-input-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:45;width:min(430px,calc(100% - 20px));display:flex;align-items:center;gap:10px;padding:10px;border-radius:22px;background:rgba(8,10,16,.92);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
-    .chat-input{flex:1;height:44px;border:none;outline:none;background:transparent;color:#fff;font-size:15px;padding:0 6px}
+    .chat-input-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--safe-bottom));z-index:45;width:min(430px,calc(100% - 20px));display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:10px;padding:10px;border-radius:22px;background:rgba(8,10,16,.94);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);box-shadow:var(--shadow)}
+    .chat-input{flex:1;min-width:0;width:100%;height:44px;border:none;outline:none;background:transparent;color:#fff;font-size:16px;padding:0 6px}
+    #page-chat.active{display:flex;flex-direction:column;min-height:100vh}
+    .chat-page-body{flex:1;padding-bottom:calc(96px + var(--safe-bottom))}
+    .chat-messages{display:flex;flex-direction:column;justify-content:flex-end;gap:12px;min-height:calc(100vh - 180px);padding-bottom:12px}
 
     @media (max-width:640px){ .grid{grid-template-columns:1fr} }
   </style>
@@ -925,11 +928,19 @@
       const input=$("#dmInput"); if(!input) return;
       const text=input.value.trim(); if(!text) return;
       const threadId=threadIdFor(state.user.uid, state.selectedDmUid);
-      await db.ref("dms/" + threadId + "/messages").push({
+      const payload = {
         text:text.slice(0,500), from:state.user.uid, to:state.selectedDmUid,
         createdAt:Date.now(), name: state.profile.displayName || state.email.split("@")[0]
-      });
-      input.value="";
+      };
+      try{
+        await db.ref("dms/" + threadId + "/messages").push(payload);
+        input.value="";
+        markThreadRead(state.selectedDmUid);
+        renderMain();
+      }catch(e){
+        console.error("sendDM failed", e);
+        toast("Message failed", e.message || "Could not send right now");
+      }
     }
 
     async function createCommunity(){
@@ -1634,7 +1645,7 @@
           </div>
         </div>
 
-        <button class="ai-fab" id="openAiBtn">${icon("ai")}</button>
+        <button class="ai-fab" id="openAiBtn" style="display:${state.currentPage === "chat" ? "none" : "block"}">${icon("ai")}</button>
 
         <div class="modal" id="editorModal">
           <div class="sheet">
@@ -1746,6 +1757,10 @@
       $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
       $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
+      const dmInput = $("#dmInput");
+      if(dmInput){
+        setTimeout(()=>{ try{ dmInput.focus(); dmInput.setSelectionRange(dmInput.value.length, dmInput.value.length); }catch(e){} }, 0);
+      }
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
       $("#chatBackBtn") && ($("#chatBackBtn").onclick=goBackToBase);
