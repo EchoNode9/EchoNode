@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>EchoNode Founder Edition v2</title>
+  <title>EchoNode Founder Edition v3</title>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     :root{
@@ -90,6 +90,10 @@
     }
     .icon-btn{width:40px;height:40px;border-radius:14px}
     .tool-btn{height:40px;padding:0 14px;border-radius:14px;font-weight:900}
+    .tiny-edit{
+      width:34px;height:34px;border-radius:12px;border:none;background:#202534;color:#fff;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,.14)
+    }
     .icon-s{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
     .icon-s svg{width:100%;height:100%;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
     .icon-s.fill svg{fill:#fff;stroke:none}
@@ -118,16 +122,16 @@
       background:#101624;border:1px solid rgba(255,255,255,.05);border-radius:18px;padding:12px;cursor:pointer;
     }
 
-    .community-list,.post-list,.thread-list{display:grid;gap:10px}
-    .community-item,.post-item,.thread-item,.message-bubble{
+    .community-list,.post-list,.thread-list,.setting-list{display:grid;gap:10px}
+    .community-item,.post-item,.thread-item,.message-bubble,.setting-item{
       background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
       border-radius:20px; padding:14px;
     }
-    .community-row,.post-head,.thread-row{display:flex; align-items:center; gap:10px; justify-content:space-between}
-    .community-left,.thread-left,.member-left{display:flex; align-items:center; gap:10px}
+    .community-row,.post-head,.thread-row,.setting-row{display:flex; align-items:center; gap:10px; justify-content:space-between}
+    .community-left,.thread-left,.member-left,.setting-left{display:flex; align-items:center; gap:10px}
     .hash{font-size:18px;color:#8d97aa}
-    .community-name,.post-name,.thread-name{font-size:15px;font-weight:900}
-    .community-topic,.post-meta,.thread-sub,.muted{font-size:12px;color:var(--muted);margin-top:4px}
+    .community-name,.post-name,.thread-name,.setting-name{font-size:15px;font-weight:900}
+    .community-topic,.post-meta,.thread-sub,.muted,.setting-sub{font-size:12px;color:var(--muted);margin-top:4px}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.online{background:var(--ok)} .dot.afk{background:var(--warn)} .dot.busy{background:var(--busy)} .dot.offline{background:var(--off)}
 
@@ -171,8 +175,15 @@
       background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
       border:1px solid rgba(255,255,255,.05); border-radius:28px; overflow:hidden; box-shadow:var(--shadow);
     }
-    .cover{height:190px;background:linear-gradient(135deg,#1a1f2f,#0b0d14) center/cover no-repeat}
-    .profile-body{padding:0 18px 18px; position:relative}
+    .cover{
+      height:170px;background:linear-gradient(135deg,#1a1f2f,#0b0d14) center/cover no-repeat;
+      position:relative;
+    }
+    .cover::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:80px;
+      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(9,11,17,.88));
+    }
+    .profile-body{padding:0 18px 18px; position:relative; margin-top:-54px}
     .name-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
     .name{font-size:28px;font-weight:1000;letter-spacing:-1px}
     .badge{padding:7px 11px;border-radius:12px;background:#1e2432;font-size:12px;font-weight:900}
@@ -253,6 +264,10 @@
       height:44px; padding:0 14px; border-radius:14px; background:#232838; color:#e8ecf6; font-weight:800; cursor:pointer;
     }
     .file-btn input{display:none}
+    .switch{width:48px;height:28px;border-radius:999px;background:#2a3347;position:relative;cursor:pointer;border:none}
+    .switch::after{content:"";position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+    .switch.on{background:#6b16ff}
+    .switch.on::after{left:24px}
 
     .toast-wrap{
       position:fixed; top:14px; left:50%; transform:translateX(-50%);
@@ -299,6 +314,20 @@
     const API = "https://echonode-api.onrender.com/auth";
     const FOUNDER_EMAIL = "aaoouua00@gmail.com";
 
+    const countryOptions = [
+      { code:"SA", flag:"🇸🇦", name:"Saudi Arabia" },
+      { code:"US", flag:"🇺🇸", name:"United States" },
+      { code:"GB", flag:"🇬🇧", name:"United Kingdom" },
+      { code:"JP", flag:"🇯🇵", name:"Japan" },
+      { code:"KR", flag:"🇰🇷", name:"South Korea" },
+      { code:"DE", flag:"🇩🇪", name:"Germany" },
+      { code:"FR", flag:"🇫🇷", name:"France" },
+      { code:"BR", flag:"🇧🇷", name:"Brazil" },
+      { code:"TR", flag:"🇹🇷", name:"Turkey" },
+      { code:"AE", flag:"🇦🇪", name:"UAE" },
+      { code:"EG", flag:"🇪🇬", name:"Egypt" }
+    ];
+
     function icon(name){
       const icons = {
         menu:`<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>`,
@@ -311,7 +340,10 @@
         plus:`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
         ai:`<svg viewBox="0 0 24 24"><path d="M12 3 14 9l6 2-6 2-2 6-2-6-6-2 6-2 2-6Z"/></svg>`,
         close:`<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6l-12 12"/></svg>`,
-        arrow:`<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`
+        arrow:`<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`,
+        edit:`<svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m12 6 4 4"/></svg>`,
+        block:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M7 17 17 7"/></svg>`,
+        lock:`<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>`
       };
       return `<span class="icon-s">${icons[name] || ''}</span>`;
     }
@@ -325,19 +357,22 @@
       code:{name:"code", topic:"Coding, UI, and builds"}
     };
 
+    const defaultPrivacy = { showBirthday:false, showCountry:true, notificationsEnabled:true };
+    const defaultProfile = {
+      displayName:"", email:"", mood:"Late night cat-energy online", level:1, xp:0,
+      mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
+      musicUrl:"", presence:"online", showcase1:"", showcase2:"", showcase3:"",
+      founder:false, countryCode:"SA", countryFlag:"🇸🇦", countryName:"Saudi Arabia",
+      birthday:"", blockedUsers:{}, securityKey:"", ...defaultPrivacy
+    };
+
     const state = {
       authMode:"welcome", accountMode:"signin", otpSent:false, accountExists:false,
       email:"", displayName:"", user:null, currentCommunity:"all", currentPage:"home",
       communities:defaultCommunities, posts:{}, profiles:{}, statusMap:{}, threads:{},
       selectedDmUid:"", sidebarOpen:false, settingsOpen:false, aiOpen:false, createCommunityOpen:false,
-      unsubs:[], presenceRef:null, lastPostAt:0, founder:false,
-      notices:["Welcome to EchoNode","Founder Edition is active","Base is ready"],
-      searchHome:"", searchBase:"",
-      profile:{
-        displayName:"", email:"", mood:"Late night cat-energy online", level:1, xp:0,
-        mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
-        musicUrl:"", presence:"online", showcase1:"", showcase2:"", showcase3:"", founder:false
-      }
+      unsubs:[], presenceRef:null, lastPostAt:0, founder:false, searchHome:"", searchBase:"",
+      profile:{ ...defaultProfile }
     };
 
     const $ = s => document.querySelector(s);
@@ -345,6 +380,7 @@
     const esc = s => { const d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; };
     const emailKey = v => String(v || "").trim().toLowerCase().replace(/[.#$/[\]]/g, "_");
     const initials = name => (name || "EN").trim().slice(0,2).toUpperCase();
+    const countryByCode = code => countryOptions.find(c => c.code === code) || countryOptions[0];
 
     function brandLogoMarkup(cls="brand-logo"){
       return `
@@ -418,23 +454,25 @@
       const pSnap=await profileRef.get();
       if(!pSnap.exists()){
         const profile = {
+          ...defaultProfile,
           displayName: state.displayName || state.email.split("@")[0],
-          email: state.email, emailKey: emailKey(state.email),
-          mood: state.profile.mood, mySpace: state.profile.mySpace, avatar:"", cover:"",
-          musicUrl:"", presence:"online", founder: state.email.toLowerCase()===FOUNDER_EMAIL.toLowerCase(),
-          showcase1:"", showcase2:"", showcase3:""
+          email: state.email,
+          emailKey: emailKey(state.email),
+          founder: state.email.toLowerCase()===FOUNDER_EMAIL.toLowerCase()
         };
         await profileRef.set(profile);
         await db.ref("emails/" + profile.emailKey).set(uid);
-        state.profile = { ...state.profile, ...profile };
+        state.profile = { ...defaultProfile, ...profile };
       } else {
-        state.profile = { ...state.profile, ...pSnap.val() };
+        state.profile = { ...defaultProfile, ...pSnap.val() };
       }
       const uSnap=await userRef.get(); const uVal=uSnap.val()||{};
       if(!uSnap.exists()) await userRef.set({xp:0, level:1});
       state.profile.xp = uVal.xp || 0; state.profile.level = uVal.level || 1;
       state.profile.email = state.profile.email || state.email;
       state.profile.founder = String(state.profile.email || "").toLowerCase()===FOUNDER_EMAIL.toLowerCase() || !!state.profile.founder;
+      const cc = countryByCode(state.profile.countryCode || "SA");
+      state.profile.countryCode = cc.code; state.profile.countryFlag = cc.flag; state.profile.countryName = cc.name;
       state.founder = !!state.profile.founder;
     }
 
@@ -581,6 +619,8 @@
     function topPosts(){
       let list = allPosts();
       if(state.currentCommunity !== "all") list = list.filter(p => p.communityId === state.currentCommunity);
+      const blocked = state.profile.blockedUsers || {};
+      list = list.filter(p => !blocked[p.uid]);
       return list.sort((a,b)=>{
         const scoreA=(a.likes||0)*5 + ((a.createdAt||0)/100000000000);
         const scoreB=(b.likes||0)*5 + ((b.createdAt||0)/100000000000);
@@ -588,7 +628,10 @@
       });
     }
     function friendCandidates(){
-      return Object.entries(state.profiles).filter(([uid,p])=>uid !== (state.user && state.user.uid)).map(([uid,p])=>({uid,...p})).slice(0,20);
+      const blocked = state.profile.blockedUsers || {};
+      return Object.entries(state.profiles)
+        .filter(([uid,p]) => uid !== (state.user && state.user.uid) && !blocked[uid])
+        .map(([uid,p])=>({uid,...p})).slice(0,20);
     }
     function threadIdFor(a,b){ return [a,b].sort().join("__"); }
     function selectedThreadMessages(){
@@ -604,8 +647,9 @@
       const communities = Object.entries(state.communities)
         .filter(([id,c]) => id !== "all" && (id.toLowerCase().includes(q) || String(c.name||"").toLowerCase().includes(q) || String(c.topic||"").toLowerCase().includes(q)))
         .map(([id,c])=>({type:"community", id, title:c.name, sub:c.topic || ""}));
+      const blocked = state.profile.blockedUsers || {};
       const users = Object.entries(state.profiles)
-        .filter(([uid,p]) => uid !== (state.user && state.user.uid) && (
+        .filter(([uid,p]) => uid !== (state.user && state.user.uid) && !blocked[uid] && (
           String(p.displayName||"").toLowerCase().includes(q) || String(p.email||"").toLowerCase().includes(q)
         ))
         .map(([uid,p])=>({type:"user", id:uid, title:p.displayName || p.email || "User", sub:p.email || p.mood || ""}));
@@ -678,6 +722,60 @@
       state.currentPage = "home";
       renderMain();
       toast("Community created", "#" + tag + " is live");
+    }
+
+    async function saveSettings(){
+      if(!state.user) return;
+      const country = countryByCode($("#settingsCountry").value || "SA");
+      state.profile.email = ($("#settingsEmail").value || "").trim().toLowerCase() || state.profile.email;
+      state.profile.securityKey = ($("#settingsSecurityKey").value || "").trim();
+      state.profile.birthday = ($("#settingsBirthday").value || "").trim();
+      state.profile.countryCode = country.code;
+      state.profile.countryFlag = country.flag;
+      state.profile.countryName = country.name;
+      await db.ref("profiles/" + state.user.uid).update({
+        email: state.profile.email,
+        emailKey: emailKey(state.profile.email),
+        securityKey: state.profile.securityKey,
+        birthday: state.profile.birthday,
+        countryCode: state.profile.countryCode,
+        countryFlag: state.profile.countryFlag,
+        countryName: state.profile.countryName,
+        showBirthday: !!state.profile.showBirthday,
+        showCountry: !!state.profile.showCountry,
+        notificationsEnabled: !!state.profile.notificationsEnabled
+      });
+      await db.ref("emails/" + emailKey(state.profile.email)).set(state.user.uid);
+      state.settingsOpen = false;
+      renderMain();
+      toast("Saved", "Settings updated");
+    }
+
+    async function toggleProfileFlag(flag){
+      state.profile[flag] = !state.profile[flag];
+      if(state.user){
+        await db.ref("profiles/" + state.user.uid + "/" + flag).set(!!state.profile[flag]);
+      }
+      renderMain();
+    }
+
+    async function blockSelectedUser(){
+      if(!state.user || !state.selectedDmUid) return toast("No user", "Open a user in Base first");
+      const blocked = { ...(state.profile.blockedUsers || {}) };
+      blocked[state.selectedDmUid] = true;
+      state.profile.blockedUsers = blocked;
+      await db.ref("profiles/" + state.user.uid + "/blockedUsers").set(blocked);
+      state.selectedDmUid = "";
+      renderMain();
+      toast("Blocked", "User added to your block list");
+    }
+
+    async function unblockUser(uid){
+      const blocked = { ...(state.profile.blockedUsers || {}) };
+      delete blocked[uid];
+      state.profile.blockedUsers = blocked;
+      await db.ref("profiles/" + state.user.uid + "/blockedUsers").set(blocked);
+      renderMain();
     }
 
     function renderSidebar(){
@@ -863,6 +961,7 @@
 
               <div class="dm-window">
                 <div class="card-title">${selected ? `Chat with ${esc(selected.displayName || selected.email || "User")}` : "Select a friend"}</div>
+                ${selected ? `<div class="card-sub" style="margin-bottom:10px">${selected.mood ? esc(selected.mood) : "Direct messages"}</div>` : ``}
                 <div class="dm-messages">
                   ${selected ? (
                     messages.length ? messages.map(m=>`
@@ -874,6 +973,9 @@
                   ) : `<div class="card"><div class="card-sub">Choose one of the users above to open Base messages.</div></div>`}
                 </div>
                 ${selected ? `
+                  <div class="row" style="margin-top:10px">
+                    <button class="tool-btn" id="blockSelectedBtn">${icon("block")} Block user</button>
+                  </div>
                   <div class="dm-compose">
                     <input class="input" id="dmInput" placeholder="Write a direct message" style="margin:0;flex:1">
                     <button class="send" id="sendDmBtn">Send</button>
@@ -894,6 +996,8 @@
       else if(p.musicUrl && isDirectAudio(p.musicUrl)) musicCard=`<div class="card-title">Music</div><audio controls preload="none" src="${p.musicUrl}" style="width:100%;margin-top:8px"></audio>`;
       else if(p.musicUrl) musicCard=`<div class="card-title">Music</div><div class="card-sub"><a href="${p.musicUrl}" target="_blank" style="color:#a78bfa;word-break:break-all">${esc(p.musicUrl)}</a></div>`;
       const pct=progressPercent(p.xp||0,p.level||1), friends=friendCandidates().slice(0,4);
+      const birthdayLine = p.birthday && p.showBirthday ? `<span class="badge">🎂 ${esc(p.birthday)}</span>` : ``;
+      const countryLine = p.showCountry ? `<span class="badge">${esc(p.countryFlag || "")} ${esc(p.countryCode || "")}</span>` : ``;
 
       return `
         <div class="page ${state.currentPage==="profile"?"active":""}" id="page-profile">
@@ -913,8 +1017,11 @@
                 <div class="name-line">
                   <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
+                  ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
+                  <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
                   ${state.founder ? `<span class="badge">Founder</span>` : ``}
+                  ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
                 <div class="xp-box">
@@ -922,24 +1029,18 @@
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
                 </div>
 
-                <div class="grid" style="margin-top:16px">
-                  <div class="card">
-                    <div class="card-title">Profile Picture</div>
-                    <div class="card-sub">Your avatar and cover shape how EchoNode sees you.</div>
-                  </div>
-                  <div class="card">${musicCard}</div>
+                <div class="card" style="margin-top:16px">
+                  <div class="card-title">My Space</div>
+                  <div class="card-sub">${esc(p.mySpace || "")}</div>
                 </div>
+
+                <div class="card" style="margin-top:12px">${musicCard}</div>
 
                 <div class="section-title">SHOWCASE</div>
                 <div class="showcase-grid">
                   <div class="showcase-item">${p.showcase1 ? `<img src="${p.showcase1}" alt="">` : "Slot 1"}</div>
                   <div class="showcase-item">${p.showcase2 ? `<img src="${p.showcase2}" alt="">` : "Slot 2"}</div>
                   <div class="showcase-item">${p.showcase3 ? `<img src="${p.showcase3}" alt="">` : "Slot 3"}</div>
-                </div>
-
-                <div class="card" style="margin-top:14px">
-                  <div class="card-title">My Space</div>
-                  <div class="card-sub">${esc(p.mySpace || "")}</div>
                 </div>
 
                 <div class="section-title">FRIENDS</div>
@@ -963,6 +1064,7 @@
     }
 
     function renderSettingsDrawer(){
+      const blocked = Object.keys(state.profile.blockedUsers || {});
       return `
         <div class="drawer ${state.settingsOpen ? "open" : ""}" id="settingsDrawer">
           <div class="sheet">
@@ -971,9 +1073,76 @@
               <div class="sheet-title">Settings</div>
               <button class="tool-btn" id="closeSettingsBtn">Close</button>
             </div>
-            <div class="card"><div class="card-title">Account</div><div class="card-sub">${esc(state.email || "Not signed in")}</div></div>
-            <div class="card" style="margin-top:10px"><div class="card-title">Founder mode</div><div class="card-sub">${state.founder ? "Founder account detected automatically for your email." : "Standard user mode."}</div></div>
-            <div class="row" style="margin-top:12px"><button class="btn secondary" id="logoutBtn" style="width:100%">Sign out</button></div>
+
+            <input class="input" id="settingsEmail" placeholder="Email" value="${esc(state.profile.email || state.email)}">
+            <input class="input" id="settingsSecurityKey" placeholder="Security Key (your own strong code)" value="${esc(state.profile.securityKey || "")}">
+            <input class="input" id="settingsBirthday" type="date" value="${esc(state.profile.birthday || "")}">
+            <select class="select input" id="settingsCountry">
+              ${countryOptions.map(c=>`<option value="${c.code}" ${state.profile.countryCode===c.code?"selected":""}>${c.flag} ${c.name}</option>`).join("")}
+            </select>
+
+            <div class="section-title">PRIVACY</div>
+            <div class="setting-list">
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div>
+                      <div class="setting-name">Show birthday</div>
+                      <div class="setting-sub">Display your birthday on profile</div>
+                    </div>
+                  </div>
+                  <button class="switch ${state.profile.showBirthday ? "on" : ""}" id="toggleBirthday"></button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div>
+                      <div class="setting-name">Show country flag</div>
+                      <div class="setting-sub">Display your flag near status</div>
+                    </div>
+                  </div>
+                  <button class="switch ${state.profile.showCountry ? "on" : ""}" id="toggleCountry"></button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-row">
+                  <div class="setting-left">
+                    <div>
+                      <div class="setting-name">Notifications</div>
+                      <div class="setting-sub">Enable or mute app notices</div>
+                    </div>
+                  </div>
+                  <button class="switch ${state.profile.notificationsEnabled ? "on" : ""}" id="toggleNotifications"></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">BLOCKED USERS</div>
+            <div class="setting-list">
+              ${blocked.length ? blocked.map(uid=>{
+                const p = state.profiles[uid] || {};
+                return `
+                  <div class="setting-item">
+                    <div class="setting-row">
+                      <div class="setting-left">
+                        <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || "U"))}</div>
+                        <div>
+                          <div class="setting-name">${esc(p.displayName || p.email || uid)}</div>
+                          <div class="setting-sub">Blocked</div>
+                        </div>
+                      </div>
+                      <button class="tool-btn" data-unblock="${uid}">Unblock</button>
+                    </div>
+                  </div>
+                `;
+              }).join("") : `<div class="card"><div class="card-sub">No blocked users yet.</div></div>`}
+            </div>
+
+            <div class="row" style="margin-top:12px">
+              <button class="btn primary" id="saveSettingsBtn">Save Settings</button>
+              <button class="btn secondary" id="logoutBtn">Sign out</button>
+            </div>
           </div>
         </div>
       `;
@@ -1119,15 +1288,18 @@
       $$("[data-ai]").forEach(btn=>btn.onclick=()=>{
         const answer=$("#aiAnswerCard");
         const map={
-          profile:"Use Edit Profile to change Profile Picture, mood, music, and the 3 Showcase slots.",
-          base:"Base is your private zone. Pick a user, open the thread, and send direct messages there.",
+          profile:"Use Edit Profile to change mood, music, cover, profile picture, and the 3 Showcase slots.",
+          base:"Base is your private zone. Pick a user, open the thread, and send direct messages there. You can block from Base too.",
           home:"Home shows top liked posts from all communities. Open the sidebar to switch to one specific community feed.",
-          founder:"Your founder email gets detected automatically and unlocks Founder mode styling and labels."
+          founder:"Your founder email gets detected automatically and unlocks Founder mode and community creation."
         };
         if(answer) answer.innerHTML=`<div class="card-title">Response</div><div class="card-sub">${esc(map[btn.dataset.ai] || "Ready.")}</div>`;
       });
 
-      $("#noticeBtn") && ($("#noticeBtn").onclick=()=>toast("Notifications", "Your white EchoNode bell is active."));
+      $("#noticeBtn") && ($("#noticeBtn").onclick=()=>{
+        if(state.profile.notificationsEnabled) toast("Notifications", "Your white EchoNode bell is active.");
+      });
+
       $("#sendPostBtn") && ($("#sendPostBtn").onclick=createPost);
       $("#composer") && ($("#composer").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); createPost(); } }));
       $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
@@ -1136,9 +1308,17 @@
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
 
       $("#openProfileSettingsBtn") && ($("#openProfileSettingsBtn").onclick=()=>$("#editorModal").classList.add("open"));
+      $("#openProfileSettingsBtn2") && ($("#openProfileSettingsBtn2").onclick=()=>$("#editorModal").classList.add("open"));
       $("#closeEditorBtn") && ($("#closeEditorBtn").onclick=()=>$("#editorModal").classList.remove("open"));
       $("#editorModal") && ($("#editorModal").onclick=e=>{ if(e.target.id==="editorModal") $("#editorModal").classList.remove("open"); });
       $("#saveProfileBtn") && ($("#saveProfileBtn").onclick=saveProfile);
+
+      $("#saveSettingsBtn") && ($("#saveSettingsBtn").onclick=saveSettings);
+      $("#toggleBirthday") && ($("#toggleBirthday").onclick=()=>toggleProfileFlag("showBirthday"));
+      $("#toggleCountry") && ($("#toggleCountry").onclick=()=>toggleProfileFlag("showCountry"));
+      $("#toggleNotifications") && ($("#toggleNotifications").onclick=()=>toggleProfileFlag("notificationsEnabled"));
+      $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
+      $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
 
       $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
 
@@ -1163,7 +1343,16 @@
         avatar: state.profile.avatar || "", cover: state.profile.cover || "",
         showcase1: state.profile.showcase1 || "", showcase2: state.profile.showcase2 || "", showcase3: state.profile.showcase3 || "",
         email: state.profile.email || state.email, emailKey: emailKey(state.profile.email || state.email),
-        founder: state.founder
+        founder: state.founder,
+        birthday: state.profile.birthday || "",
+        countryCode: state.profile.countryCode || "SA",
+        countryFlag: state.profile.countryFlag || "🇸🇦",
+        countryName: state.profile.countryName || "Saudi Arabia",
+        showBirthday: !!state.profile.showBirthday,
+        showCountry: !!state.profile.showCountry,
+        notificationsEnabled: !!state.profile.notificationsEnabled,
+        securityKey: state.profile.securityKey || "",
+        blockedUsers: state.profile.blockedUsers || {}
       };
       state.profile = { ...state.profile, ...next };
       await db.ref("profiles/" + state.user.uid).update(next);
