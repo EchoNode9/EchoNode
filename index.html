@@ -215,6 +215,11 @@
     }
     .dm-messages{display:grid;gap:10px;flex:1;overflow:auto;padding-right:2px}
     .message-bubble.self{background:rgba(107,22,255,.15);border-color:rgba(107,22,255,.28)}
+    .message-bubble{
+      border-radius:18px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.04);
+    }
     .message-bubble .t{font-size:14px;line-height:1.55}
     .message-bubble .m{font-size:11px;color:var(--muted);margin-top:6px}
     .dm-compose{display:flex;gap:10px;margin-top:12px}
@@ -703,6 +708,12 @@
         .map(([uid,p])=>({uid,...p})).slice(0,20);
     }
     function threadIdFor(a,b){ return [a,b].sort().join("__"); }
+    function openChatWith(uid){
+      if(!uid) return;
+      state.selectedDmUid = uid;
+      state.currentPage = "base";
+      renderMain();
+    }
     function selectedThreadMessages(){
       if(!state.user || !state.selectedDmUid) return [];
       const id=threadIdFor(state.user.uid, state.selectedDmUid);
@@ -1027,9 +1038,9 @@
             <div class="section-title">FRIENDS</div>
             <div class="friends-strip">
               ${users.slice(0,4).map(u=>`
-                <div class="friend-stack" data-open-member="${u.uid}">
-                  <div class="friend-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
-                  <div class="friend-name">${esc((u.displayName || "User").slice(0,8))}</div>
+                <div class="friend-stack">
+                  <div class="friend-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                  <div class="friend-name" data-open-chat="${u.uid}">${esc((u.displayName || "User").slice(0,8))}</div>
                 </div>
               `).join("")}
               <div class="friend-stack" data-page="base">
@@ -1042,11 +1053,11 @@
             <div class="dm-layout">
               <div class="thread-list">
                 ${users.length ? users.map(u=>`
-                  <div class="thread-item" data-open-member="${u.uid}">
+                  <div class="thread-item">
                     <div class="thread-row">
                       <div class="thread-left">
-                        <div class="post-avatar">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
-                        <div>
+                        <div class="post-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                        <div data-open-chat="${u.uid}" style="cursor:pointer">
                           <div class="thread-name">${esc(u.displayName || u.email || "User")}</div>
                           <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
                         </div>
@@ -1121,9 +1132,6 @@
                   ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
-                <div class="row" style="margin-top:10px">
-                  <button class="tool-btn" id="sendMsgFromProfileBtn">💬 Send Message</button>
-                </div>
                 <div class="xp-box">
                   XP: ${esc(p.xp || 0)} ⭐
                   <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
@@ -1206,6 +1214,10 @@
                   ${playingLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
+                <div class="row" style="margin-top:10px">
+                  <button class="tool-btn" id="sendMsgFromMemberProfileBtn">${icon("arrow")} Send Message</button>
+                </div>
+
                 <div class="card" style="margin-top:16px">
                   <div class="card-title">${spaceTitle}</div>
                   <div class="card-sub">${esc(p.mySpace || "")}</div>
@@ -1522,12 +1534,9 @@
       $("#toggleNotifications") && ($("#toggleNotifications").onclick=()=>toggleProfileFlag("notificationsEnabled"));
       $$("[data-unblock]").forEach(btn=>btn.onclick=()=>unblockUser(btn.dataset.unblock));
       $("#blockSelectedBtn") && ($("#blockSelectedBtn").onclick=blockSelectedUser);
-      $("#sendMsgFromProfileBtn") && ($("#sendMsgFromProfileBtn").onclick=()=>{
-        if(state.viewingProfileUid){
-          state.selectedDmUid = state.viewingProfileUid;
-          state.currentPage = "base";
-          renderMain();
-        }
+      $$("[data-open-chat]").forEach(el=>el.onclick=()=>openChatWith(el.dataset.openChat));
+      $("#sendMsgFromMemberProfileBtn") && ($("#sendMsgFromMemberProfileBtn").onclick=()=>{
+        if(state.viewingProfileUid) openChatWith(state.viewingProfileUid);
       });
 
       $("#logoutBtn") && ($("#logoutBtn").onclick=async ()=>{ await auth.signOut(); state.currentPage="home"; state.settingsOpen=false; });
