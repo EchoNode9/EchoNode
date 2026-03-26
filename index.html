@@ -392,7 +392,8 @@
         send:`<svg viewBox="0 0 24 24"><path d="M21 3 3 11l7 2 2 7 9-17Z"/></svg>`,
         smile:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01"/><path d="M8.5 14c1 1.2 2.2 2 3.5 2s2.5-.8 3.5-2"/></svg>`,
         flag:`<svg viewBox="0 0 24 24"><path d="M5 21V5"/><path d="M5 5c6-2 8 2 14 0v8c-6 2-8-2-14 0"/></svg>`,
-        game:`<svg viewBox="0 0 24 24"><path d="M6 12h3m-1.5-1.5v3M15.5 11h.01M18.5 13h.01"/><path d="M7 8h10a4 4 0 0 1 4 4v2a3 3 0 0 1-5.2 2.1L14 14H10l-1.8 2.1A3 3 0 0 1 3 14v-2a4 4 0 0 1 4-4Z"/></svg>`
+        game:`<svg viewBox="0 0 24 24"><path d="M6 12h3m-1.5-1.5v3M15.5 11h.01M18.5 13h.01"/><path d="M7 8h10a4 4 0 0 1 4 4v2a3 3 0 0 1-5.2 2.1L14 14H10l-1.8 2.1A3 3 0 0 1 3 14v-2a4 4 0 0 1 4-4Z"/></svg>`,
+        paw:`<svg viewBox="0 0 24 24"><ellipse cx="12" cy="15.2" rx="5.2" ry="4.6" fill="#f7f7fb" stroke="#f7f7fb"/><circle cx="8.2" cy="8.2" r="2.05" fill="#f6b6c8"/><circle cx="11.2" cy="6.7" r="2.25" fill="#f6b6c8"/><circle cx="14.8" cy="6.7" r="2.25" fill="#f6b6c8"/><circle cx="17.8" cy="8.2" r="2.05" fill="#f6b6c8"/><path d="M9.2 14.6c.9-1.1 1.8-1.7 2.8-1.7 1.1 0 2 .6 2.9 1.7.9 1.1 1.1 2.2.8 3.1-.3 1.1-1.4 1.9-3.7 1.9s-3.4-.8-3.7-1.9c-.3-.9-.1-2 .9-3.1Z" fill="#f6b6c8"/></svg>`
       };
       return `<span class="icon-s">${icons[name] || ''}</span>`;
     }
@@ -412,7 +413,7 @@
       mySpace:"Your clips, thoughts, and best drops live here.", avatar:"", cover:"",
       musicUrl:"", presence:"online", gender:"", friendsVisibility:"public", showcase1:"", showcase2:"", showcase3:"",
       founder:false, countryCode:"SA", countryFlag:"🇸🇦", countryName:"Saudi Arabia",
-      birthday:"", blockedUsers:{}, securityKey:"", paws:100, premiumBadge:false, profileGlow:false, catBadge:false, supporterBadge:false, nameSpark:false, ...defaultPrivacy
+      birthday:"", blockedUsers:{}, securityKey:"", paws:100, premiumBadge:false, profileGlow:false, catPawBadge:false, nameSpark:false, ...defaultPrivacy
     };
 
     const state = {
@@ -775,9 +776,8 @@
     function openMemberProfile(uid){
       if(!uid) return;
       state.viewingProfileUid = uid;
-      state.memberMenuOpen = false;
       state.currentPage = "memberProfile";
-      try{ renderMain(); }catch(e){ console.error("openMemberProfile failed", e); toast("Profile error", "Could not open this profile yet."); }
+      renderMain();
     }
 
     /* 4) CHAT PAGE (SAFE VERSION) */
@@ -808,7 +808,7 @@
           ${user ? (
             messages.length ? messages.map(m=>`
               <div class="chat-row ${m.from===state.user.uid ? "me" : "them"}">
-                <div class="chat-bubble ${m.from===state.user.uid ? "me" : "them"}">
+                <div class="chat-bubble ${m.from===state.user.uid ? "me" : ""}">
                   <div class="chat-text">${esc(m.text || "")}</div>
                   <div class="chat-time">${esc(timeLabel(m.createdAt))}</div>
                 </div>
@@ -827,18 +827,18 @@
       </div>
 
       ${user ? `
-        <div class="chat-input-bar">
+        <form class="chat-input-bar" id="chatSendForm">
           <button class="emoji-btn" id="emojiBtn" type="button">${icon("smile")}</button>
-
-          <input
-            class="chat-input"
-            id="dmInput"
-            placeholder="Write a direct message"
-            autocomplete="off"
-          >
-
-          <button class="send-icon-btn" id="sendDmBtn" type="button">${icon("send")}</button>
-        </div>
+          <div class="chat-input-shell">
+            <input
+              class="chat-input"
+              id="dmInput"
+              placeholder="Write a direct message"
+              autocomplete="off"
+            >
+          </div>
+          <button class="send-icon-btn" id="sendDmBtn" type="submit" aria-label="Send message">${icon("send")}</button>
+        </form>
       ` : ``}
     </div>
   `;
@@ -985,8 +985,7 @@
         paws: Number(state.profile.paws || 0),
         premiumBadge: !!state.profile.premiumBadge,
         profileGlow: !!state.profile.profileGlow,
-        catBadge: !!state.profile.catBadge,
-        supporterBadge: !!state.profile.supporterBadge,
+        catPawBadge: !!state.profile.catPawBadge,
         nameSpark: !!state.profile.nameSpark
       });
       await db.ref("emails/" + emailKey(state.profile.email)).set(state.user.uid);
@@ -1040,15 +1039,14 @@
       const paws = Number(state.profile.paws || 0);
       if(paws < price) return toast("Not enough paws", `You need ${price - paws} more 🐾.`);
       const updates = { paws: paws - price };
-      let purchaseText = "Upgrade unlocked.";
-      if(type === "badge"){ updates.premiumBadge = true; purchaseText = "Premium Badge unlocked."; }
-      if(type === "glow"){ updates.profileGlow = true; purchaseText = "Profile Glow unlocked."; }
-      if(type === "catBadge"){ updates.catBadge = true; purchaseText = "Cat Paw badge unlocked."; }
-      if(type === "supporter"){ updates.supporterBadge = true; purchaseText = "Supporter badge unlocked."; }
-      if(type === "spark"){ updates.nameSpark = true; purchaseText = "Name Spark unlocked."; }
+      if(type === "badge") updates.premiumBadge = true;
+      if(type === "glow") updates.profileGlow = true;
+      if(type === "paw") updates.catPawBadge = true;
+      if(type === "spark") updates.nameSpark = true;
       state.profile = { ...state.profile, ...updates };
       await db.ref("profiles/" + state.user.uid).update(updates);
-      toast("Purchased", purchaseText);
+      const labelMap = { badge:"Premium Badge unlocked.", glow:"Profile Glow unlocked.", paw:"Cat Paw Badge unlocked.", spark:"Name Spark unlocked." };
+      toast("Purchased", labelMap[type] || "Item unlocked.");
       renderMain();
     }
 
@@ -1105,7 +1103,7 @@
       return `
         <div class="post-item">
           <div class="post-head">
-            <div class="member-left">
+            <div class="member-left" data-open-member="${p.uid}" style="cursor:pointer">
               <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.name || "U"))}</div>
               <div>
                 <div class="post-name">${esc(p.name || "User")}</div>
@@ -1140,6 +1138,7 @@
             </div>
             <div class="top-right">
               <button class="icon-btn" id="noticeBtn">${icon("bell")}</button>
+              <button class="icon-btn" id="openStoreBtn">${icon("paw")}</button>
               <button class="icon-btn" id="openSettingsBtn">${icon("settings")}</button>
             </div>
           </div>
@@ -1185,6 +1184,17 @@
               ${state.founder ? `<div class="chip">Founder mode</div>` : ``}
             </div>
 
+            <div class="grid" style="margin-top:12px">
+              <div class="card" id="homeStoreCard" style="cursor:pointer">
+                <div class="card-title">${icon("paw")} Store</div>
+                <div class="card-sub">Open your upgrades, badges, glow, and future drops.</div>
+              </div>
+              <div class="card" id="homeAssistantCard" style="cursor:pointer">
+                <div class="card-title">${icon("ai")} Assistant & Settings</div>
+                <div class="card-sub">Open settings and quick help from Home.</div>
+              </div>
+            </div>
+
             <div class="section-title">TOP POSTS</div>
             <div class="post-list">
               ${feed.length ? feed.map(renderPostCard).join("") : `
@@ -1221,7 +1231,7 @@
             <div class="section-title">FRIENDS</div>
             <div class="friends-strip">
               ${users.slice(0,4).map(u=>`
-                <div class="friend-stack">
+                <div class="friend-stack" data-open-member="${f.uid}">
                   <div class="friend-avatar" data-open-member="${f.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                   <div class="friend-name" data-open-chat="${u.uid}">${esc((u.displayName || "User").slice(0,8))}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
                 </div>
@@ -1239,7 +1249,7 @@
                   <div class="thread-item">
                     <div class="thread-row">
                       <div class="thread-left">
-                        <div class="post-avatar" data-open-member="${u.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
+                        <div class="post-avatar" data-open-member="${f.uid}">${u.avatar ? `<img src="${u.avatar}" alt="">` : esc(initials(u.displayName || u.email || "U"))}</div>
                         <div data-open-chat="${u.uid}" style="cursor:pointer;flex:1">
                           <div class="thread-name">${esc(u.displayName || u.email || "User")}${unreadForUid(u.uid) ? `<span class="unread-badge">${unreadForUid(u.uid)}</span>` : ``}</div>
                           <div class="thread-sub">${esc(u.mood || "Tap to open direct messages")}</div>
@@ -1278,6 +1288,27 @@
                 ` : ``}
               </div>
             </div>
+
+            <div class="section-title">BLOCKED USERS</div>
+            <div class="thread-list">
+              ${Object.keys(state.profile.blockedUsers || {}).length ? Object.keys(state.profile.blockedUsers || {}).map(uid=>{
+                const p = state.profiles[uid] || {};
+                return `
+                  <div class="thread-item">
+                    <div class="thread-row">
+                      <div class="thread-left" data-open-member="${uid}" style="cursor:pointer">
+                        <div class="post-avatar">${p.avatar ? `<img src="${p.avatar}" alt="">` : esc(initials(p.displayName || p.email || "U"))}</div>
+                        <div>
+                          <div class="thread-name">${esc(p.displayName || p.email || "Blocked user")}</div>
+                          <div class="thread-sub">Blocked • tap to view profile</div>
+                        </div>
+                      </div>
+                      <button class="tool-btn" data-unblock="${uid}">Unblock</button>
+                    </div>
+                  </div>
+                `;
+              }).join("") : `<div class="card"><div class="card-sub">No blocked users yet.</div></div>`}
+            </div>
           </div>
         </div>
       `;
@@ -1309,18 +1340,16 @@
               <div class="profile-body">
                 <div class="avatar-big">${avatarInner}</div>
                 <div class="name-line">
-                  <div class="name">${esc(p.displayName || state.email.split("@")[0])}${p.nameSpark ? " ✦" : ""}</div>
+                  <div class="name">${esc(p.displayName || state.email.split("@")[0])}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
                   ${countryLine}
                   <span class="badge">Lv ${esc(p.level || 1)}</span>
                   <button class="tiny-edit" id="openProfileSettingsBtn2">${icon("edit")}</button>
-                  <button class="tool-btn" id="openStoreBtn" style="height:34px;padding:0 12px">Store 🐾</button>
                   ${state.founder ? `<span class="badge">Founder</span>` : ``}
                   ${p.premiumBadge ? `<span class="badge">Premium</span>` : ``}
                   ${p.profileGlow ? `<span class="badge">Glow</span>` : ``}
-                  ${p.catBadge ? `<span class="badge">${icon("paw")} Cat</span>` : ``}
-                  ${p.supporterBadge ? `<span class="badge">Supporter</span>` : ``}
-                  ${p.nameSpark ? `<span class="badge">Spark</span>` : ``}
+                  ${p.catPawBadge ? `<span class="badge">${icon("paw")} Cat Paw</span>` : ``}
+                  ${p.nameSpark ? `<span class="badge">✦ Spark</span>` : ``}
                   ${birthdayLine}
                 </div>
                 <div class="meta">${esc(p.mood || "")}</div>
@@ -1409,12 +1438,8 @@
               <div class="profile-body">
                 <div class="avatar-big">${avatarInner}</div>
                 <div class="name-line">
-                  <div class="name">${esc(p.displayName || "User")}${p.nameSpark ? " ✦" : ""}</div>
+                  <div class="name">${esc(p.displayName || "User")}</div>
                   <span class="badge">${esc(p.presence || "online")}</span>
-                  ${p.premiumBadge ? `<span class="badge">Premium</span>` : ``}
-                  ${p.profileGlow ? `<span class="badge">Glow</span>` : ``}
-                  ${p.catBadge ? `<span class="badge">${icon("paw")} Cat</span>` : ``}
-                  ${p.supporterBadge ? `<span class="badge">Supporter</span>` : ``}
                   ${countryLine}
                   ${birthdayLine}
                   ${playingLine}
@@ -1435,7 +1460,7 @@
                 ${showFriends ? `
                   <div class="friends-strip">
                     ${theirFriends.map(f=>`
-                      <div class="friend-stack">
+                      <div class="friend-stack" data-open-member="${f.uid}">
                         <div class="friend-avatar">${f.avatar ? `<img src="${f.avatar}" alt="">` : esc(initials(f.displayName || "U"))}</div>
                         <div class="friend-name">${esc((f.displayName || "User").slice(0,8))}</div>
                       </div>
@@ -1475,6 +1500,12 @@
             <select class="select input" id="settingsCountry">
               ${countryOptions.map(c=>`<option value="${c.code}" ${state.profile.countryCode===c.code?"selected":""}>${c.flag} ${c.name}</option>`).join("")}
             </select>
+
+            <div class="section-title">ASSISTANT</div>
+            <div class="card" id="settingsAssistantCard" style="cursor:pointer">
+              <div class="card-title">${icon("ai")} Echo assistant</div>
+              <div class="card-sub">Profile tips, Base help, Home guide, and founder shortcuts are here.</div>
+            </div>
 
             <div class="section-title">PRIVACY</div>
             <div class="setting-list">
@@ -1561,7 +1592,7 @@
             </div>
             <div class="card" style="margin-top:12px" id="aiAnswerCard">
               <div class="card-title">Response</div>
-              <div class="card-sub">Ask the cat and it points you in the right direction.</div>
+              <div class="card-sub">Open this from Settings when you want quick help.</div>
             </div>
           </div>
         </div>
@@ -1597,25 +1628,18 @@
                 </div>
               </div>
               <div class="card">
-                <div class="card-title">${icon("paw")} Cat Paw Badge</div>
+                <div class="card-title">Cat Paw Badge</div>
                 <div class="card-sub">Cute white paw with pink pads on your profile.</div>
                 <div class="row" style="margin-top:10px">
-                  <button class="btn primary" id="buyCatBadgeBtn" ${state.profile.catBadge ? 'disabled style="opacity:.6"' : ''}>${state.profile.catBadge ? 'Owned' : 'Buy • 15 🐾'}</button>
+                  <button class="btn primary" id="buyPawBtn" ${state.profile.catPawBadge ? 'disabled style="opacity:.6"' : ''}>${state.profile.catPawBadge ? 'Owned' : 'Buy • 15 🐾'}</button>
                 </div>
               </div>
               <div class="card">
-                <div class="card-title">Supporter Badge</div>
-                <div class="card-sub">Early user badge for launch day profiles.</div>
+                <div class="card-title">Name Spark</div>
+                <div class="card-sub">Adds a little ✦ sparkle badge to your profile.</div>
                 <div class="row" style="margin-top:10px">
-                  <button class="btn primary" id="buySupporterBtn" ${state.profile.supporterBadge ? 'disabled style="opacity:.6"' : ''}>${state.profile.supporterBadge ? 'Owned' : 'Buy • 25 🐾'}</button>
+                  <button class="btn primary" id="buySparkBtn" ${state.profile.nameSpark ? 'disabled style="opacity:.6"' : ''}>${state.profile.nameSpark ? 'Owned' : 'Buy • 10 🐾'}</button>
                 </div>
-              </div>
-            </div>
-            <div class="card" style="margin-top:12px">
-              <div class="card-title">Name Spark</div>
-              <div class="card-sub">Adds a small ✦ next to your display name.</div>
-              <div class="row" style="margin-top:10px">
-                <button class="btn primary" id="buySparkBtn" ${state.profile.nameSpark ? 'disabled style="opacity:.6"' : ''}>${state.profile.nameSpark ? 'Owned' : 'Buy • 10 🐾'}</button>
               </div>
             </div>
           </div>
@@ -1669,8 +1693,6 @@
             </button>
           </div>
         </div>
-
-        <button class="ai-fab" id="openAiBtn">${icon("ai")}</button>
 
         <div class="modal" id="editorModal">
           <div class="sheet">
@@ -1727,16 +1749,17 @@
       $("#openSettingsBtn") && ($("#openSettingsBtn").onclick=()=>{ state.settingsOpen=true; renderMain(); });
       $("#closeSettingsBtn") && ($("#closeSettingsBtn").onclick=()=>{ state.settingsOpen=false; renderMain(); });
       $("#settingsDrawer") && ($("#settingsDrawer").onclick=e=>{ if(e.target.id==="settingsDrawer"){ state.settingsOpen=false; renderMain(); } });
-      $("#openAiBtn") && ($("#openAiBtn").onclick=()=>{ state.aiOpen=true; renderMain(); });
       $("#closeAiBtn") && ($("#closeAiBtn").onclick=()=>{ state.aiOpen=false; renderMain(); });
       $("#aiDrawer") && ($("#aiDrawer").onclick=e=>{ if(e.target.id==="aiDrawer"){ state.aiOpen=false; renderMain(); } });
       $("#openStoreBtn") && ($("#openStoreBtn").onclick=()=>{ state.storeOpen=true; renderMain(); });
+      $("#homeStoreCard") && ($("#homeStoreCard").onclick=()=>{ state.storeOpen=true; renderMain(); });
+      $("#homeAssistantCard") && ($("#homeAssistantCard").onclick=()=>{ state.settingsOpen=true; renderMain(); });
+      $("#settingsAssistantCard") && ($("#settingsAssistantCard").onclick=()=>{ state.aiOpen=true; renderMain(); });
       $("#closeStoreBtn") && ($("#closeStoreBtn").onclick=()=>{ state.storeOpen=false; renderMain(); });
       $("#storeDrawer") && ($("#storeDrawer").onclick=e=>{ if(e.target.id==="storeDrawer"){ state.storeOpen=false; renderMain(); } });
       $("#buyBadgeBtn") && ($("#buyBadgeBtn").onclick=()=>buyStoreItem("badge", 20));
       $("#buyGlowBtn") && ($("#buyGlowBtn").onclick=()=>buyStoreItem("glow", 30));
-      $("#buyCatBadgeBtn") && ($("#buyCatBadgeBtn").onclick=()=>buyStoreItem("catBadge", 15));
-      $("#buySupporterBtn") && ($("#buySupporterBtn").onclick=()=>buyStoreItem("supporter", 25));
+      $("#buyPawBtn") && ($("#buyPawBtn").onclick=()=>buyStoreItem("paw", 15));
       $("#buySparkBtn") && ($("#buySparkBtn").onclick=()=>buyStoreItem("spark", 10));
       $("#openCreateCommunityBtn") && ($("#openCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=true; renderMain(); });
       $("#closeCreateCommunityBtn") && ($("#closeCreateCommunityBtn").onclick=()=>{ state.createCommunityOpen=false; renderMain(); });
@@ -1782,8 +1805,9 @@
         };
       }
 
-      $("#sendDmBtn") && ($("#sendDmBtn").onclick=sendDM);
-      $("#emojiBtn") && ($("#emojiBtn").onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
+      $("#sendDmBtn") && ($("#sendDmBtn").addEventListener("click", e=>{ e.preventDefault(); sendDM(); }));
+      $("#chatSendForm") && ($("#chatSendForm").addEventListener("submit", e=>{ e.preventDefault(); sendDM(); }));
+      $$("#emojiBtn").forEach(btn=>btn.onclick=()=>{ const input=$("#dmInput"); if(input){ input.value += " 😊"; input.focus(); } });
       $("#dmInput") && ($("#dmInput").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDM(); } }));
       $("#homeSearch") && ($("#homeSearch").addEventListener("input", e=>{ state.searchHome=e.target.value; renderMain(); }));
       $("#userSearch") && ($("#userSearch").addEventListener("input", e=>{ state.searchBase=e.target.value; renderMain(); }));
@@ -1841,7 +1865,9 @@
         blockedUsers: state.profile.blockedUsers || {},
         paws: Number(state.profile.paws || 0),
         premiumBadge: !!state.profile.premiumBadge,
-        profileGlow: !!state.profile.profileGlow
+        profileGlow: !!state.profile.profileGlow,
+        catPawBadge: !!state.profile.catPawBadge,
+        nameSpark: !!state.profile.nameSpark
       };
       state.profile = { ...state.profile, ...next };
       await db.ref("profiles/" + state.user.uid).update(next);
